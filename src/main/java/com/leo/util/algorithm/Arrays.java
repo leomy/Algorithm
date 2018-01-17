@@ -12,8 +12,54 @@ import java.util.Comparator;
  */
 public final class Arrays {
 
+
     private Arrays() {
+
     }
+
+    /**
+     * 冒泡排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
+     *
+     * @param array 待排序的数组
+     */
+    public static final void bubbleSort(int[] array) {
+        if (array == null) {
+            return;
+        }
+
+        for (int i = 0, length = array.length - 1; i < length; i++) {
+            int min = array[i];
+            for (int j = i + 1; j < array.length; j++) {
+                if (array[j] < min) {
+                    swap(array, i, j);
+                }
+            }
+        }
+    }
+
+    /**
+     * 选择排序(只有int[],该算法实际应用不大).默认按照升序排序.时间复杂度 O(n ^ 2)
+     *
+     * @param array 待排序的数组
+     */
+    public static final void selectSort(int[] array) {
+        if (array == null) {
+            return;
+        }
+
+        for (int i = 0, length = array.length - 1; i < length; i++) {
+            int position = i;
+            for (int j = i + 1; j < array.length; j++) {
+                if (array[j] < array[position]) {
+                    position = j;
+                }
+            }
+            if (position != i) {
+                swap(array, i, position);
+            }
+        }
+    }
+
 
     /**
      * 在数组的 [0,array.length) 范围内查找key
@@ -155,4 +201,18 @@ public final class Arrays {
 
         return -(startIndex + 1);
     }
+
+    /**
+     * 交换数组中两个元素
+     *
+     * @param array
+     * @param index1
+     * @param index2
+     */
+    private static final void swap(int[] array, int index1, int index2) {
+        array[index1] ^= array[index2];
+        array[index2] ^= array[index1];
+        array[index1] ^= array[index2];
+    }
+
 }
