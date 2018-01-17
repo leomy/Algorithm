@@ -26,7 +26,7 @@ public final class Arrays {
     }
 
     /**
-     * 在数组的 [startIndex,toIndex) 范围内查找key
+     * 在数组的 [startIndex,endIndex) 范围内查找key
      *
      * @param array      已经排序号好的数组
      * @param startIndex 起始索引,包含该索引.取值  [0, endIndex]
@@ -49,16 +49,23 @@ public final class Arrays {
         }
 
         endIndex = (endIndex == array.length) ? array.length - 1 : endIndex - 1;
+
         if (key < array[startIndex]) {
             return -(startIndex + 1);
+        }
+        if(key == array[startIndex]){
+            return startIndex;
         }
 
         if (key > array[endIndex]) {
             return -(endIndex - startIndex + 2);
         }
+        if(key == array[endIndex]){
+            return endIndex;
+        }
 
         int middleIndex = 0, middle = 0;
-        while (true) {
+        while (startIndex <= endIndex) {
             middleIndex = ((startIndex + endIndex) >>> 1);
             middle = array[middleIndex];
             if (key == middle) {
@@ -68,12 +75,8 @@ public final class Arrays {
             } else {
                 endIndex = middleIndex - 1;
             }
-            if (startIndex > endIndex) {
-                break;
-            }
         }
 
         return -(startIndex + 1);
-
     }
 }
