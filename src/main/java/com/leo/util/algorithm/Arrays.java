@@ -29,7 +29,7 @@ public final class Arrays {
 
         for (int i = 0, length = array.length - 1; i < length; i++) {
             int min = array[i];
-            for (int j = i + 1; j < array.length; j++) {
+            for (int j = i + 1, limit = array.length; j < limit; j++) {
                 if (array[j] < min) {
                     swap(array, i, j);
                 }
@@ -49,7 +49,7 @@ public final class Arrays {
 
         for (int i = 0, length = array.length - 1; i < length; i++) {
             int position = i;
-            for (int j = i + 1; j < array.length; j++) {
+            for (int j = i + 1, limit = array.length; j < limit; j++) {
                 if (array[j] < array[position]) {
                     position = j;
                 }
@@ -61,7 +61,11 @@ public final class Arrays {
     }
 
     /**
-     * 插入排序(采用二分查找加快查找速度,只有int[],该算法实际应用不大).按照升序排序.时间复杂度O(n ^ 2)
+     * 插入排序.按照升序排序.时间复杂度O(n ^ 2).
+     * Note: 适用范围(数组部分有序): <br/>
+     * 1. 数组中每个元素距它的最终位置不远 <br/>
+     * 2. 一个有序的大数组接上一个小数组 <br/>
+     * 3. 数组中只有几个元素位置不正确 <br/>
      *
      * @param array
      */
@@ -70,24 +74,11 @@ public final class Arrays {
             return;
         }
 
-        int index = 0;
         for (int i = 1, length = array.length; i < length; i++) {
-            int key = array[i];
-            if(key >= array[i - 1]){
-                continue;
+            for (int j = i; j > 0 && array[j] < array[j - 1]; j--) {
+                swap(array, j, j - 1);
             }
-
-            if ((index = binarySearch(array, key)) < 0) {
-                index = -index + 1;
-            }
-
-            for (int j = index, limit = i + 1; j < limit; j++) {
-                array[j + 1] = array[j];
-            }
-            array[index] = key;
         }
-
-
     }
 
 
