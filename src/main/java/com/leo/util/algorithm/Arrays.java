@@ -38,7 +38,7 @@ public final class Arrays {
     }
 
     /**
-     * 选择排序(只有int[],该算法实际应用不大).默认按照升序排序.时间复杂度 O(n ^ 2)
+     * 选择排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
      *
      * @param array 待排序的数组
      */
@@ -58,6 +58,36 @@ public final class Arrays {
                 swap(array, i, position);
             }
         }
+    }
+
+    /**
+     * 插入排序(采用二分查找加快查找速度,只有int[],该算法实际应用不大).按照升序排序.时间复杂度O(n ^ 2)
+     *
+     * @param array
+     */
+    public static final void insertSort(int[] array) {
+        if (array == null) {
+            return;
+        }
+
+        int index = 0;
+        for (int i = 1, length = array.length; i < length; i++) {
+            int key = array[i];
+            if(key >= array[i - 1]){
+                continue;
+            }
+
+            if ((index = binarySearch(array, key)) < 0) {
+                index = -index + 1;
+            }
+
+            for (int j = index, limit = i + 1; j < limit; j++) {
+                array[j + 1] = array[j];
+            }
+            array[index] = key;
+        }
+
+
     }
 
 
@@ -213,6 +243,19 @@ public final class Arrays {
         array[index1] ^= array[index2];
         array[index2] ^= array[index1];
         array[index1] ^= array[index2];
+    }
+
+    /**
+     * 交换数组中两个元素
+     *
+     * @param array
+     * @param index1
+     * @param index2
+     */
+    private static final <E> void swap(E[] array, int index1, int index2) {
+        E temp = array[index1];
+        array[index1] = array[index2];
+        array[index2] = temp;
     }
 
 }
