@@ -39,11 +39,11 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * 检查元素是否为空
      *
      * @param e 待检查的元素
-     * @throws NullPointerException 当e为null时,抛出异常
+     * @throws IllegalArgumentException 当e为null时,抛出异常
      */
-    protected void checkElement(E e) throws NullPointerException {
+    protected void checkElement(E e) throws IllegalArgumentException {
         if (e == null) {
-            throw new NullPointerException("the value of e is null");
+            throw new IllegalArgumentException("the value of e is null");
         }
     }
 }

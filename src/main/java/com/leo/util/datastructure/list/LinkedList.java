@@ -42,7 +42,7 @@ public class LinkedList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public boolean add(E e) throws NullPointerException {
+    public boolean add(E e) throws IllegalArgumentException {
         checkElement(e);
 
         Node newNode = new Node();
@@ -64,7 +64,7 @@ public class LinkedList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public boolean addAll(Collection<E> collection) throws NullPointerException {
+    public boolean addAll(Collection<E> collection) throws IllegalArgumentException {
         if (collection == null) {
             throw new NullPointerException("the value of collection is null");
         }
@@ -98,7 +98,7 @@ public class LinkedList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public boolean add(int index, E e) throws IndexOutOfBoundsException, NullPointerException {
+    public boolean add(int index, E e) throws IndexOutOfBoundsException, IllegalArgumentException {
         checkElement(e);
         checkIndex(index);
 
@@ -148,7 +148,7 @@ public class LinkedList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public E set(int index, E e) throws IndexOutOfBoundsException, NullPointerException {
+    public E set(int index, E e) throws IndexOutOfBoundsException, IllegalArgumentException {
         checkElement(e);
         if (index < 0 || index >= size || (size == 0 && index == 0)) {
             throw new IndexOutOfBoundsException(indexAndSizeMassage(index));
@@ -179,7 +179,7 @@ public class LinkedList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public boolean contains(E e) throws NullPointerException {
+    public boolean contains(E e) throws IllegalArgumentException {
         checkElement(e);
 
         int i = 0;

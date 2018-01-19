@@ -61,9 +61,9 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public boolean addAll(Collection<E> collection) throws NullPointerException {
+    public boolean addAll(Collection<E> collection) throws IllegalArgumentException {
         if (collection == null) {
-            throw new NullPointerException("the value of collection is null");
+            throw new IllegalArgumentException("the value of collection is null");
         }
 
         int needMinCapacity = collection.size() + size;
@@ -78,7 +78,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public boolean add(int index, E e) throws IndexOutOfBoundsException, NullPointerException {
+    public boolean add(int index, E e) throws IndexOutOfBoundsException, IllegalArgumentException {
         checkElement(e);
         checkIndex(index);
 
@@ -132,7 +132,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     }
 
     @Override
-    public E set(int index, E e) throws IndexOutOfBoundsException, NullPointerException {
+    public E set(int index, E e) throws IndexOutOfBoundsException, IllegalArgumentException {
         checkElement(e);
         if (index < 0 || index >= size || (size == 0 && index == 0)) {
             throw new IndexOutOfBoundsException(indexAndSizeMassage(index));
@@ -173,16 +173,16 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
             /**
              * 记录迭代时的位置
              */
-            private int currentLocation;
+            private int currentPosition;
 
             @Override
             public boolean hasNext() {
-                return currentLocation < size;
+                return currentPosition < size;
             }
 
             @Override
             public E next() {
-                return elements[currentLocation++];
+                return elements[currentPosition++];
             }
         };
     }

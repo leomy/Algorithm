@@ -159,17 +159,14 @@ public final class Arrays {
      * @param key        待查找的元素
      * @return 当 return >= 0 时,表示key在array中的位置; <br/>
      * 当 return < 0 时,-return + 1 表示key插入array时，应该在的位置
-     * @throws NullPointerException     当array为空时抛出异常
      * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
-     *                                  1. startIndex > endIndex <br/>
-     *                                  2. startIndex < 0 <br/>
-     *                                  3. endIndex > array.length <br/>
+     *                                  1. array = null <br/>
+     *                                  2. startIndex > endIndex <br/>
+     *                                  3. startIndex < 0 <br/>
+     *                                  4. endIndex > array.length <br/>
      */
     public static final int binarySearch(int[] array, int startIndex, int endIndex, int key) throws NullPointerException, IllegalArgumentException {
-        if (array == null) {
-            throw new NullPointerException("array is null");
-        }
-        if (startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
+        if (array == null || startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
             throw new IllegalArgumentException();
         }
 
@@ -214,9 +211,9 @@ public final class Arrays {
      * @param comparator 比较器,自定义规则比较对象大小
      * @return 当 return >= 0 时,表示key在array中的位置;<br/>
      * 当 return < 0 时,-return + 1 表示key插入array时，应该在的位置
-     * @throws NullPointerException 当array或key为null时抛出异常
+     * @throws IllegalArgumentException 当array或key为null时抛出异常
      */
-    public static final <E> int binarySearch(E[] array, E key, Comparator<E> comparator) throws NullPointerException {
+    public static final <E> int binarySearch(E[] array, E key, Comparator<E> comparator) throws IllegalArgumentException {
         return binarySearch(array, 0, array.length, key, comparator);
     }
 
@@ -230,17 +227,16 @@ public final class Arrays {
      * @param comparator 比较器,自定义规则比较对象大小
      * @return 当 return >= 0 时,表示key在array中的位置; <br/>
      * 当 return < 0 时,-return + 1 表示key插入array时，应该在的位置
-     * @throws NullPointerException     当array、key、comparator中任意一个为null时抛出异常
      * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. array = null <br/>
+     *                                  2. key = mull <br/>
+     *                                  3. comparator = null <br/>
      *                                  1. startIndex > endIndex <br/>
      *                                  2. startIndex < 0 <br/>
      *                                  3. endIndex > array.length <br/>
      */
-    public static <E> int binarySearch(E[] array, int startIndex, int endIndex, E key, Comparator<E> comparator) throws NullPointerException, IllegalArgumentException {
-        if (array == null || key == null || comparator == null) {
-            throw new NullPointerException();
-        }
-        if (startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
+    public static <E> int binarySearch(E[] array, int startIndex, int endIndex, E key, Comparator<E> comparator) throws IllegalArgumentException {
+        if (array == null || key == null || comparator == null || startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
             throw new IllegalArgumentException();
         }
 
