@@ -12,7 +12,6 @@ import java.util.Comparator;
  */
 public final class Arrays {
 
-
     private Arrays() {
 
     }
@@ -67,7 +66,7 @@ public final class Arrays {
      * 2. 一个有序的大数组接上一个小数组 <br/>
      * 3. 数组中只有几个元素位置不正确 <br/>
      *
-     * @param array
+     * @param array 待排序的数组
      */
     public static final void insertSort(int[] array) {
         if (array == null) {
@@ -75,9 +74,65 @@ public final class Arrays {
         }
 
         for (int i = 1, length = array.length; i < length; i++) {
-            for (int j = i; j > 0 && array[j] < array[j - 1]; j--) {
-                swap(array, j, j - 1);
+            int index = i;
+            while (index > 0 && array[index] < array[index - 1]) {
+                array[index - 1] = array[index];
+                index--;
             }
+            if (index != i) {
+                array[index] = array[i];
+            }
+        }
+    }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进.
+     *
+     * @param array 待排序的数组
+     */
+    public static final void shellSort(int[] array) {
+        if (array == null) {
+            return;
+        }
+
+        int h = 1, hMax = array.length / 3;
+        while (h < hMax) {
+            h = 3 * h + 1;
+        }
+
+        while (h >= 1) {
+            for (int i = 1, lenght = array.length; i < lenght; i++) {
+                for (int j = i; j >= h && array[j] < array[j - h]; j -= h) {
+                    swap(array, j, j - h);
+                }
+            }
+            h /= 3;
+        }
+    }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进.
+     *
+     * @param array      待排序的数组
+     * @param comparator 比较器.自定义排序规则
+     */
+    public static final <E> void shellSort(E[] array, Comparator<E> comparator) {
+        if (array == null || comparator == null) {
+            return;
+        }
+
+        int h = 1, hMax = array.length / 3;
+        while (h < hMax) {
+            h = 3 * h + 1;
+        }
+
+        while (h >= 1) {
+            for (int i = 1, lenght = array.length; i < lenght; i++) {
+                for (int j = i; j >= h && comparator.compare(array[j], array[j - h]) < 0; j -= h) {
+                    swap(array, j, j - h);
+                }
+            }
+            h /= 3;
         }
     }
 
