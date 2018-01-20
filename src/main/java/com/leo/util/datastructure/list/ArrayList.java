@@ -20,7 +20,9 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     /**
      * 保存所有的元素
      */
-    private E[] elements;
+    private Object[] elements;
+
+    private static final Object[] EMPTY_ELMENTS = new Object[]{};
 
     /**
      * 容量
@@ -38,8 +40,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     private static final int MAX_CAPACITY = Integer.MAX_VALUE;
 
     public ArrayList() {
-        capacity = DEFAULT_CAPACITY;
-        elements = (E[]) new Object[capacity];
+        this(DEFAULT_CAPACITY);
     }
 
     public ArrayList(int initCapacity) {
@@ -47,7 +48,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
             throw new IllegalArgumentException("Illegal capacity: " + initCapacity);
         }
         capacity = initCapacity;
-        elements = (E[]) new Object[capacity];
+        elements = EMPTY_ELMENTS;
     }
 
 
@@ -95,7 +96,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     public E remove(int index) throws IndexOutOfBoundsException {
         checkIndex(index);
 
-        E element = elements[index];
+        E element = (E) elements[index];
         for (int i = index; i < size; i++) {
             elements[i] = elements[i + 1];
         }
@@ -138,7 +139,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
             throw new IndexOutOfBoundsException(indexAndSizeMassage(index));
         }
 
-        E element = elements[index];
+        E element = (E) elements[index];
         elements[index] = e;
 
         return e;
@@ -148,7 +149,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
     public E get(int index) throws IndexOutOfBoundsException {
         checkIndex(index);
 
-        return elements[index];
+        return (E) elements[index];
     }
 
     @Override
@@ -182,7 +183,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
 
             @Override
             public E next() {
-                return elements[currentPosition++];
+                return (E) elements[currentPosition++];
             }
         };
     }
@@ -200,6 +201,8 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
             int halfCapacity = capacity >> 1;
             capacity = (MAX_CAPACITY - capacity) <= halfCapacity ? MAX_CAPACITY : capacity + halfCapacity;
             elements = Arrays.copyOf(elements, capacity);
+        } else if (elements.equals(EMPTY_ELMENTS)) {
+            elements = new Object[capacity];
         }
     }
 
