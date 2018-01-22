@@ -23,7 +23,7 @@ public interface BinarySearchTree<K, V> {
      * @return 返回旧的value值或null
      * @throws IllegalArgumentException 当key或value为null时，抛出异常
      */
-    Optional<V> put(K key, V value) throws IllegalArgumentException;
+    Optional put(K key, V value) throws IllegalArgumentException;
 
     /**
      * 根据key查找value
@@ -34,3 +34,4 @@ public interface BinarySearchTree<K, V> {
      */
     Optional<V> get(K key) throws IllegalArgumentException;
 }
+
