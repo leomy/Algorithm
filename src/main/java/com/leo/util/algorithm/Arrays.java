@@ -1,6 +1,7 @@
 package com.leo.util.algorithm;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 /**
  * 关于数组的算法.如排序、查找
@@ -20,10 +21,11 @@ public final class Arrays {
      * 冒泡排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
      *
      * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final void bubbleSort(int[] array) {
-        if (array == null) {
-            return;
+    public static final Optional<int[]> bubbleSort(int[] array) {
+        if (array != null) {
+            return Optional.empty();
         }
 
         for (int i = 0, length = array.length - 1; i < length; i++) {
@@ -34,16 +36,19 @@ public final class Arrays {
                 }
             }
         }
+
+        return Optional.of(array);
     }
 
     /**
      * 选择排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
      *
      * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final void selectSort(int[] array) {
+    public static final Optional<int[]> selectSort(int[] array) {
         if (array == null) {
-            return;
+            return Optional.empty();
         }
 
         for (int i = 0, length = array.length - 1; i < length; i++) {
@@ -57,6 +62,8 @@ public final class Arrays {
                 swap(array, i, position);
             }
         }
+
+        return Optional.of(array);
     }
 
     /**
@@ -67,10 +74,11 @@ public final class Arrays {
      * 3. 数组中只有几个元素位置不正确 <br/>
      *
      * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final void insertSort(int[] array) {
+    public static final Optional<int[]> insertSort(int[] array) {
         if (array == null) {
-            return;
+            return Optional.empty();
         }
 
         for (int i = 1, length = array.length; i < length; i++) {
@@ -83,16 +91,19 @@ public final class Arrays {
                 array[index] = array[i];
             }
         }
+
+        return Optional.of(array);
     }
 
     /**
      * 希尔排序.在插入排序的基础上改进.
      *
      * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final void shellSort(int[] array) {
+    public static final Optional<int[]> shellSort(int[] array) {
         if (array == null) {
-            return;
+            return Optional.empty();
         }
 
         int h = 1, hMax = array.length / 3;
@@ -108,6 +119,8 @@ public final class Arrays {
             }
             h /= 3;
         }
+
+        return Optional.of(array);
     }
 
     /**
@@ -115,10 +128,16 @@ public final class Arrays {
      *
      * @param array      待排序的数组
      * @param comparator 比较器.自定义排序规则
+     * @return 排序(以从小到大的顺序)完的数组
+     * @throws IllegalArgumentException 当comparator为空时，抛出异常
      */
-    public static final <E> void shellSort(E[] array, Comparator<E> comparator) {
-        if (array == null || comparator == null) {
-            return;
+    public static final <E> Optional<E[]> shellSort(E[] array, Comparator<E> comparator) throws IllegalArgumentException {
+        if (comparator == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (array == null) {
+            return Optional.empty();
         }
 
         int h = 1, hMax = array.length / 3;
@@ -134,6 +153,8 @@ public final class Arrays {
             }
             h /= 3;
         }
+
+        return Optional.of(array);
     }
 
 
