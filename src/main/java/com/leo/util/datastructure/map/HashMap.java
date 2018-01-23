@@ -9,7 +9,8 @@ import java.util.Iterator;
 import java.util.Optional;
 
 /**
- * HashMap的实现<br/>
+ * HashMap的实现 <br/>
+ * Note: 实现依赖于key的hashCode()、equest()方法，建议重写这两个方法
  *
  * @author leo
  * @version 1.0
@@ -39,6 +40,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * 通过拉链法保存实际的key-value键值对
      */
     private Node<K, V>[] table;
+
 
     /**
      * 默认的初始化容量
@@ -71,37 +73,13 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     /**
      * 定义类来保存实际的kv键值对
      */
-    private class Node<K, V> implements Map.Entry<K, V> {
-
-        /**
-         * 保存key
-         */
-        K key;
-
-        /**
-         * 保存value
-         */
-        V value;
+    private class Node<K, V> extends AbstractEntry<K, V> {
 
         /**
          * 指向下一个Node
          */
         Node<K, V> next;
 
-        @Override
-        public Optional<K> getKey() {
-            return Optional.ofNullable(key);
-        }
-
-        @Override
-        public Optional<V> getValue() {
-            return Optional.ofNullable(value);
-        }
-
-        @Override
-        public void setValue(V value) {
-            this.value = value;
-        }
     }
 
     /**
@@ -143,7 +121,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 /**
                  * 记录当前到table的何处
                  */
-                private int location;
+                private int position;
 
                 /**
                  * 记录现在已经了的迭代元素个数
@@ -163,12 +141,13 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 @Override
                 public E next() {
                     Node node = this.node;
-                    while (node == null){
-                        node = table[location++];
+                    while (node == null) {
+                        node = table[position++];
                     }
+                    Node oldNode = node;
                     this.node = node.next;
                     this.size++;
-                    return (E) node.key;
+                    return (E) oldNode.key;
                 }
             };
         }
@@ -212,7 +191,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 /**
                  * 记录当前到table的何处
                  */
-                private int location;
+                private int position;
 
                 /**
                  * 记录现在已经了的迭代元素个数
@@ -232,17 +211,17 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 @Override
                 public Entry<K, V> next() {
                     Node node = this.node;
-                    while (node == null){
-                        node = table[location++];
+                    while (node == null) {
+                        node = table[position++];
                     }
+                    Node oldNode = node;
                     this.node = node.next;
                     this.size++;
-                    return node;
+                    return oldNode;
                 }
             };
         }
     }
-
 
     public HashMap() {
         this(DEFAULT_INIT_CAPACITY);
@@ -310,14 +289,12 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     @Override
     public Optional<V> remove(K key) {
-        V value = null;
-        remove(key, value, true);
-        return Optional.ofNullable(value);
+        return Optional.ofNullable(remove(key, null, true));
     }
 
     @Override
-    public boolean remove(K key, V value) {
-        return remove(key, value, false);
+    public Optional<V> remove(K key, V value) {
+        return Optional.ofNullable(remove(key, value, false));
     }
 
     @Override
@@ -390,7 +367,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @return 返回再table的索引
      */
     private int indexOfKey(K key) {
-        return key == null ? 0 : key.hashCode() & (capacity - 1);
+        return key == null ? 0 : (key.hashCode() & 0x7FFF_FFFF) & (capacity - 1);
     }
 
     /**
@@ -478,30 +455,30 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @param key         待移除的键
      * @param value       待移除的值
      * @param ignoreValue 为true时,忽略value,,key符合时就移除;为false时,key-value都符合时，才移除
-     * @return 被移除的value
+     * @return 返回被移除的value或null
      */
-    private boolean remove(K key, V value, boolean ignoreValue) {
+    private V remove(K key, V value, boolean ignoreValue) {
         int index = indexOfKey(key);
         Node<K, V> node = table[index];
         Node<K, V> prevNode = node;
-        int modCount = 0;
+        boolean isRoot = true;
         while (node != null) {
             if (equalsKeyOrValue(node.key, key)) {
                 if (!ignoreValue && !equalsKeyOrValue(node.value, value)) {
                     continue;
                 }
-                if (modCount > 0) {
+                if (isRoot) {
                     prevNode.next = node.next;
                 } else {
                     table[index] = node.next;
                 }
-                value = node.value;
-                return true;
+                size--;
+                return node.value;
             }
             prevNode = node;
             node = node.next;
-            modCount++;
+            isRoot = false;
         }
-        return false;
+        return null;
     }
 }

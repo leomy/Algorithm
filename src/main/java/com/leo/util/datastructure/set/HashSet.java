@@ -38,7 +38,11 @@ public class HashSet<E> extends AbstractSet<E> implements Set<E> {
 
     @Override
     public boolean addAll(Collection<E> collection) {
-        return false;
+        if (collection == null) {
+            throw new IllegalArgumentException();
+        }
+        collection.forEach(element -> map.put(element, VALUE));
+        return true;
     }
 
     @Override

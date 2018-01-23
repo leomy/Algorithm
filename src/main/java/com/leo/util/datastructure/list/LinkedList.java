@@ -66,7 +66,7 @@ public class LinkedList<E> extends AbstractList<E> implements List<E> {
     @Override
     public boolean addAll(Collection<E> collection) throws IllegalArgumentException {
         if (collection == null) {
-            throw new NullPointerException("the value of collection is null");
+            throw new IllegalArgumentException("the value of collection is null");
         }
 
         for (E e : collection) {

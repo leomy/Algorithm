@@ -30,11 +30,11 @@ public interface Collection<E> extends Iterable<E> {
      * @param collection 待添加的容器
      * @return 返回true, 表示添加成功;返回false,表示添加失败
      * @throws UnsupportedOperationException 当前容器不支持该操作时抛出异常
-     * @throws NullPointerException 当collection为空时抛出异常
+     * @throws IllegalArgumentException 当collection为空时抛出异常
      */
-    default boolean addAll(Collection<E> collection) throws UnsupportedOperationException{
+    default boolean addAll(Collection<E> collection) throws UnsupportedOperationException, IllegalArgumentException{
         if(collection == null){
-            throw new NullPointerException();
+            throw new IllegalArgumentException();
         }
         collection.forEach(e -> add(e));
         return true;

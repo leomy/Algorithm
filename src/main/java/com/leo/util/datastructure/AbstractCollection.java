@@ -1,7 +1,5 @@
 package com.leo.util.datastructure;
 
-import java.util.Optional;
-
 /**
  * 所有实现了Collection接口的基类
  *

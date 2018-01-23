@@ -2,6 +2,8 @@ package com.leo.util.datastructure.map;
 
 import com.leo.util.datastructure.Map;
 
+import java.util.Optional;
+
 /**
  * 所有实现了Map接口的基类
  *
@@ -17,6 +19,34 @@ public abstract class AbstractMap<K, V> implements Map<K, V> {
      */
     protected int size;
 
+    protected class AbstractEntry<K, V> implements Entry<K, V> {
+
+        /**
+         * 保存键
+         */
+        protected K key;
+
+        /**
+         * 保存值
+         */
+        protected V value;
+
+        @Override
+        public Optional<K> getKey() {
+            return Optional.ofNullable(key);
+        }
+
+        @Override
+        public Optional<V> getValue() {
+            return Optional.ofNullable(value);
+        }
+
+        @Override
+        public void setValue(V value) {
+            this.value = value;
+        }
+    }
+
     @Override
     public int size() {
         return size;
@@ -28,12 +58,16 @@ public abstract class AbstractMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean remove(Entry<K, V> entry) {
-        return entry == null ? true : remove(entry.getKey().orElse(null), entry.getValue().orElse(null));
+    public Optional<V> remove(Entry<K, V> entry) {
+        if (entry == null) {
+            return Optional.empty();
+        }
+
+        return remove(entry.getKey().orElse(null), entry.getValue().orElse(null));
     }
 
     @Override
-    public boolean containsEntry(Entry<K, V> entry){
+    public boolean containsEntry(Entry<K, V> entry) {
         return entry == null ? true : containsEntry(entry.getKey().orElse(null), entry.getValue().orElse(null));
     }
 
