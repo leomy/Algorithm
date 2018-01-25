@@ -1,7 +1,6 @@
 package com.leo.util.algorithm.bst;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 /**
  * 二三树的实现
@@ -11,7 +10,7 @@ import java.util.Optional;
  * @date: 2018/1/19
  * @since 1.0
  */
-public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implements BinarySearchTree<K, V> {
+public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements BinarySearchTree<T> {
 
     /**
      * 标识时哪种节点
@@ -63,10 +62,10 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
     /**
      * 2-节点.
      * 保存:
-     * 1. 一对key-value.
-     * 2. 两个节点. 左节点的key都小于该节点的key;右节点的key都大于该节点的key
+     * 1. 一个value
+     * 2. 两个节点. 左节点的value都小于该节点的value;右节点的value都大于该节点的value
      */
-    private static class TwoNode extends BinaryNode {
+    private class TwoNode extends BinaryNode {
 
         NodeFlag nodeFlag;
 
@@ -74,12 +73,12 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             nodeFlag = NodeFlag.TWO;
         }
 
-        TwoNode(KVNode kvNode) {
-            this(kvNode, null, null, null);
+        TwoNode(T value) {
+            this(value, null, null, null);
         }
 
-        TwoNode(KVNode kvNode, TwoNode parent, BinaryNode left, BinaryNode right) {
-            super(kvNode, left, right);
+        TwoNode(T value, TwoNode parent, BinaryNode left, BinaryNode right) {
+            super(value, left, right);
             this.parent = parent;
             this.parent = parent;
         }
@@ -88,15 +87,15 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
     /**
      * 3-节点.
      * 保存:
-     * 1. 两对key-value.
-     * 2. 三个节点. 左节点的key都小于该节点的key;中间节点的key介于该节点的左右节点的key之间;右节点的key都大于该节点的key
+     * 1. 两个value
+     * 2. 三个节点. 左节点的value都小于该节点的value;中间节点的value介于该节点的左右节点的value之间;右节点的value都大于该节点的value
      */
-    private static class ThreeNode extends TwoNode {
+    private class ThreeNode extends TwoNode {
 
         /**
          * 另一个K-V节点，是两个节点中key最大的一个
          */
-        KVNode maxKVNode;
+        T maxValue;
 
         /**
          * 指向中间节点
@@ -107,13 +106,13 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             nodeFlag = NodeFlag.THREE;
         }
 
-        ThreeNode(KVNode kvNode, KVNode maxKVNode) {
-            this(kvNode, maxKVNode, null, null, null);
+        ThreeNode(T value, T maxValue) {
+            this(value, maxValue, null, null, null);
         }
 
-        ThreeNode(KVNode kvNode, KVNode maxKVNode, TwoNode parent, BinaryNode left, BinaryNode right) {
-            super(kvNode, parent, left, right);
-            this.maxKVNode = maxKVNode;
+        ThreeNode(T value, T maxValue, TwoNode parent, BinaryNode left, BinaryNode right) {
+            super(value, parent, left, right);
+            this.maxValue = maxValue;
         }
 
         /**
@@ -136,17 +135,17 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
     /**
      * 4-节点.仅做中间状态用
      */
-    private static class FourNode extends TwoNode {
+    private class FourNode extends TwoNode {
 
         /**
          * 保存中间大小的KVNode
          */
-        KVNode middleKVNode;
+        T middleValue;
 
         /**
          * 保存最大的KVNode
          */
-        KVNode maxKVNode;
+        T maxValue;
 
         /**
          * 保存left center
@@ -162,12 +161,12 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             nodeFlag = NodeFlag.FOUR;
         }
 
-        FourNode(KVNode kvNode, KVNode middleKVNode, KVNode maxKVNode,
+        FourNode(T value, T middleValue, T maxValue,
                  TwoNode parent,
                  BinaryNode left, TwoNode leftCenter, TwoNode rightCenter, BinaryNode right) {
-            super(kvNode, parent, left, right);
-            this.middleKVNode = middleKVNode;
-            this.maxKVNode = maxKVNode;
+            super(value, parent, left, right);
+            this.middleValue = middleValue;
+            this.maxValue = maxValue;
             this.leftCenter = leftCenter;
             this.rightCenter = rightCenter;
         }
@@ -209,122 +208,120 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
         this(null);
     }
 
-    public TwoThreeTree(Comparator<K> comparator) {
+    public TwoThreeTree(Comparator<T> comparator) {
         super(comparator);
     }
 
     @Override
-    public Optional<V> put(K key, V value) throws IllegalArgumentException {
-        if (key == null || value == null) {
+    public void put(T value) throws IllegalArgumentException {
+        if (value == null) {
             throw new IllegalArgumentException();
         }
 
         // 1. 此时root节点为null,新建、设置并返回
         if (root == null) {
-            root = new TwoNode(new KVNode(key, value));
+            root = new TwoNode(value);
             root.parent = root;
             hight = 1;
-            return Optional.empty();
+            return;
         }
 
-        // 2. 此时节点处于树中,更新value并返回旧value
-        Object[] objects = find((TwoNode) root, key);
-        KVNode kvNode = (KVNode) objects[0];
-        if (kvNode != null) {
-            V oldValue = (V) kvNode.value;
-            kvNode.value = value;
-            return Optional.of(oldValue);
+        Object[] objects = find(root, value);
+
+        // 2. 此时节点处于树中,返回
+        boolean contins = (boolean) objects[0];
+        if (contins) {
+            return;
         }
 
         TwoNode node = (TwoNode) objects[1];
-        kvNode = new KVNode(key, value);
 
         // 3. 此时树高为1时,root变成3-节点或变成4-节点(分裂)并返回
         if (hight < 2) {
             if (node.nodeFlag.equals(NodeFlag.TWO)) {
                 // 3.1 表示当前节点是个2-节点,直接变成一个三节点
-                KVNode[] nodes = sort(new KVNode[]{kvNode, node.kvNode});
-                ThreeNode newRoot = new ThreeNode(nodes[0], nodes[1]);
+                Object[] values = {value, node.value};
+                sort(values);
+                ThreeNode newRoot = new ThreeNode((T) values[0], (T) values[1]);
                 root = newRoot;
                 root.parent = newRoot;
             } else {
                 // 3.2 表示当前节点为3节点,裂变成3个2-节点,树高加1
-                KVNode[] nodes = sort(new KVNode[]{root.kvNode, kvNode, ((ThreeNode) root).maxKVNode});
-                TwoNode newRoot = new TwoNode(nodes[1]);
-                newRoot.buildLeftRelation(new TwoNode(nodes[0]))
-                        .buildRightRelation(new TwoNode(nodes[2]));
+                Object[] values = {root.value, value, ((ThreeNode) root).maxValue};
+                sort(values);
+                TwoNode newRoot = new TwoNode((T) values[1]);
+                newRoot.buildLeftRelation(new TwoNode((T) values[0]))
+                        .buildRightRelation(new TwoNode((T) values[2]));
                 root = newRoot;
                 root.parent = newRoot;
                 hight++;
             }
-            return Optional.empty();
+            return;
         }
 
         // 4. 此时node为 2-节点.直接变成3-节点,返回
         if (node.nodeFlag.equals(NodeFlag.TWO)) {
-            KVNode[] nodes = sort(new KVNode[]{kvNode, node.kvNode});
+            Object[] values = {value, node.value};
+            sort(values);
             if (!node.getClass().equals(ThreeNode.class)) {
-                ThreeNode threeNode = new ThreeNode(nodes[0], nodes[1]);
+                ThreeNode threeNode = new ThreeNode((T) values[0], (T) values[1]);
                 replace(threeNode, node);
                 threeNode.buildLeftRelation(node.left)
                         .buildRightRelation(node.right);
             } else {
                 node.nodeFlag = NodeFlag.THREE;
-                ((ThreeNode) node).kvNode = nodes[0];
-                ((ThreeNode) node).maxKVNode = nodes[1];
+                ((ThreeNode) node).value = values[0];
+                ((ThreeNode) node).maxValue = (T) values[1];
             }
-            return Optional.empty();
+            return;
         }
 
         // 5. 此时node为3-节点,变成4-节点并处理
         ThreeNode threeNode = (ThreeNode) node;
-        KVNode[] nodes = sort(new KVNode[]{kvNode, threeNode.kvNode, threeNode.maxKVNode});
-        FourNode fourNode = new FourNode(nodes[0], nodes[1], nodes[2],
+        Object[] values = {value, threeNode.value, threeNode.maxValue};
+        sort(values);
+        FourNode fourNode = new FourNode((T) values[0], (T) values[1], (T) values[2],
                 (TwoNode) node.parent,
                 threeNode.left, threeNode.center, null, threeNode.right);
         replace(fourNode, node);
         decomposeFourNode(fourNode);
-        return Optional.empty();
-
     }
 
     /**
-     * 根据key在以start为起始节点的树中查找
+     * 在以start为起始节点的树中查找value
      *
-     * @param start 起始节点,没有做空处理
-     * @param key   键
-     * @return 如果返回值不为null, 则返回的数组中，其索引对应的值表示为: <br/>
-     * 1. index = 0 : 如果不为null,用来标识找到的到底是哪一个k-v键值.影响后面的索引对应的值 <br/>
-     * 2. index = 1 当0所对应的值为null时,表示找到和key最相近的node; 反之,表示找到的了与key相等的node <br/>
+     * @param start 起始节点
+     * @param value 要查找的值
+     * @return 1. index = 0 : 表示是否找到value;true表示找到,false表示未找到,影响index = 1 <br/>
+     * 2. index = 1 当index = false时,表示找到和key最相近的node;当index = true时,该值无效 <br/>
      */
     @Override
-    protected Object[] find(BinaryNode start, K key) {
+    protected Object[] find(BinaryNode start, T value) {
         TwoNode node = (TwoNode) start;
         Object[] objects = new Object[2];
         TwoNode parent = node;
+        int result;
 
         while (node != null) {
-            int result;
             parent = node;
-            if ((result = comparator.compare(key, (K) node.kvNode.key)) == 0) {
-                objects[0] = node.kvNode;
-                objects[1] = node;
-                break;
+            if ((result = comparator.compare(value, (T) node.value)) == 0) {
+                objects[0] = true;
+                return objects;
             } else if (result < 0) {
                 node = (TwoNode) node.left;
             } else if (node.nodeFlag.equals(NodeFlag.TWO)) {
                 node = (TwoNode) node.right;
             } else {
                 ThreeNode threeNode = (ThreeNode) node;
-                if ((result = comparator.compare(key, (K) threeNode.maxKVNode.key)) == 0) {
-                    objects[0] = threeNode.maxKVNode;
-                    objects[1] = threeNode;
-                    break;
+                if ((result = comparator.compare(value, threeNode.maxValue)) == 0) {
+                    objects[0] = true;
+                    return objects;
                 }
                 node = (result < 0 ? threeNode.center : (TwoNode) threeNode.right);
             }
         }
 
+        objects[0] = false;
         objects[1] = parent;
         return objects;
     }
@@ -337,11 +334,11 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
     private void decomposeFourNode(FourNode fourNode) {
         // 1 此时root为4-节点,变为3个2-节点,树高加1,返回
         if (root.equals(fourNode)) {
-            root = new TwoNode(fourNode.middleKVNode);
+            root = new TwoNode(fourNode.middleValue);
             root.parent = root;
 
-            root.buildLeftRelation(new TwoNode(fourNode.kvNode))
-                    .buildRightRelation(new TwoNode(fourNode.maxKVNode));
+            root.buildLeftRelation(new TwoNode((T) fourNode.value))
+                    .buildRightRelation(new TwoNode(fourNode.maxValue));
             root.left.buildLeftRelation(fourNode.left)
                     .buildRightRelation(fourNode.leftCenter);
             root.right.buildLeftRelation(fourNode.rightCenter)
@@ -372,11 +369,11 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
 
             if (direction.equals(Direction.LEFT)) {
                 // 2.1 从parent左侧插入,广度+先序设置
-                parentIsThreeNode.maxKVNode = parent.kvNode;
-                parentIsThreeNode.kvNode = fourNode.middleKVNode;
+                parentIsThreeNode.maxValue = (T) parent.value;
+                parentIsThreeNode.value = fourNode.middleValue;
 
-                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.maxKVNode))
-                        .buildLeftRelation(new TwoNode(fourNode.kvNode))
+                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.maxValue))
+                        .buildLeftRelation(new TwoNode((T) fourNode.value))
                         .buildRightRelation(parent.right);
 
                 parentIsThreeNode.left.buildLeftRelation(fourNode.left)
@@ -385,12 +382,12 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
                         .buildRightRelation(fourNode.right);
             } else {
                 // 2.2 从parent右侧插入.广度+先序设置
-                parentIsThreeNode.kvNode = parent.kvNode;
-                parentIsThreeNode.maxKVNode = fourNode.middleKVNode;
+                parentIsThreeNode.value = parent.value;
+                parentIsThreeNode.maxValue = fourNode.middleValue;
 
-                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.kvNode))
+                parentIsThreeNode.buildCenterRelation(new TwoNode((T) fourNode.value))
                         .buildLeftRelation(parent.left)
-                        .buildRightRelation(new TwoNode(fourNode.maxKVNode));
+                        .buildRightRelation(new TwoNode(fourNode.maxValue));
 
                 parentIsThreeNode.center.buildLeftRelation(fourNode.left)
                         .buildRightRelation(fourNode.leftCenter);
@@ -409,35 +406,35 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
         // 3.1 将parent替换成4-节点,并递归处理parent
         replace(fourNode, parent);
 
-        TwoNode left = new TwoNode(fourNode.kvNode);
+        TwoNode left = new TwoNode((T) fourNode.value);
         left.buildLeftRelation(fourNode.left);
         left.buildRightRelation(fourNode.leftCenter);
-        TwoNode right = new TwoNode(fourNode.maxKVNode);
+        TwoNode right = new TwoNode(fourNode.maxValue);
         right.buildLeftRelation(fourNode.rightCenter);
         right.buildRightRelation(fourNode.right);
         if (direction.equals(Direction.LEFT)) {
             // 3.1.1 child在parent左子树上
-            fourNode.kvNode = fourNode.middleKVNode;
-            fourNode.middleKVNode = parentIsThreeNode.kvNode;
-            fourNode.maxKVNode = parentIsThreeNode.maxKVNode;
+            fourNode.value = fourNode.middleValue;
+            fourNode.middleValue = (T) parentIsThreeNode.value;
+            fourNode.maxValue = parentIsThreeNode.maxValue;
             fourNode.buildLeftCenterRelation(right)
                     .buildRightCenterRelation(parentIsThreeNode.center)
                     .buildLeftRelation(left)
                     .buildRightRelation(parentIsThreeNode.right);
         } else if (direction.equals(Direction.CENTER)) {
             // 3.1.2 child在parent中间子树上
-            fourNode.kvNode = fourNode.middleKVNode;
-            fourNode.middleKVNode = parentIsThreeNode.kvNode;
-            fourNode.maxKVNode = parentIsThreeNode.maxKVNode;
+            fourNode.value = fourNode.middleValue;
+            fourNode.middleValue = (T) parentIsThreeNode.value;
+            fourNode.maxValue = parentIsThreeNode.maxValue;
             fourNode.buildLeftCenterRelation(left)
                     .buildRightCenterRelation(right)
                     .buildLeftRelation(parentIsThreeNode.left)
                     .buildRightRelation(parentIsThreeNode.right);
         } else {
             // 3.1.3 child在parent右子树上
-            fourNode.maxKVNode = fourNode.middleKVNode;
-            fourNode.kvNode = parentIsThreeNode.kvNode;
-            fourNode.middleKVNode = parentIsThreeNode.maxKVNode;
+            fourNode.maxValue = fourNode.middleValue;
+            fourNode.value = parentIsThreeNode.value;
+            fourNode.middleValue = parentIsThreeNode.maxValue;
             fourNode.buildLeftCenterRelation(parentIsThreeNode.center)
                     .buildRightCenterRelation(left)
                     .buildLeftRelation(parentIsThreeNode.left)

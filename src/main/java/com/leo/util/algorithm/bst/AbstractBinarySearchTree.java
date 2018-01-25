@@ -3,18 +3,17 @@ package com.leo.util.algorithm.bst;
 import com.leo.util.algorithm.Arrays;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 /**
  * 所有实现了二叉查找树接口的基类
- * Note: 不保存key = null或value = null
+ * Note: 不保存null
  *
  * @author leo
  * @version 1.0
  * @date: 2018/1/19
  * @since 1.0
  */
-public abstract class AbstractBinarySearchTree<K, V> implements BinarySearchTree<K, V> {
+public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T> {
 
     /**
      * 保存根节点
@@ -27,23 +26,22 @@ public abstract class AbstractBinarySearchTree<K, V> implements BinarySearchTree
     protected int hight;
 
     /**
-     * key的比较器,用来比较key的大小
+     * value的比较器,用来比较value的大小
      */
-    protected Comparator<K> comparator;
+    protected Comparator<T> comparator;
 
-
-    public AbstractBinarySearchTree(Comparator<K> comparator) {
+    public AbstractBinarySearchTree(Comparator<T> comparator) {
         this.comparator = (comparator == null ? generateCompator() : comparator);
     }
 
     @Override
-    public Optional<V> get(K key) throws IllegalArgumentException {
-        if (key == null) {
+    public boolean contains(T value) throws IllegalArgumentException {
+        if (value == null) {
             throw new IllegalArgumentException();
         }
 
-        Object[] objects = find(root, key);
-        return Optional.ofNullable(objects[0] == null ? null : (V) ((KVNode) objects[0]).value);
+        Object[] objects = find(root, value);
+        return (boolean) objects[0];
     }
 
     @Override
@@ -57,46 +55,48 @@ public abstract class AbstractBinarySearchTree<K, V> implements BinarySearchTree
      * @return
      */
     private static final Comparator generateCompator() {
-        return (k1, k2) -> ((Comparable) k1).compareTo(k2);
+        return (value1, value2) -> ((Comparable) value1).compareTo(value2);
     }
 
     /**
-     * 根据key在以start为起始节点的树中查找
-     * Note: 如果子类重新定义的节点新增了子节点的指向,需要重写该方法
+     * 在以start为起始节点的树中查找value
+     * Note: 如果子类重新定义的节点新增了其他子树,需要重写该方法
      *
      * @param start 起始节点
-     * @param key   键
-     * @return 1. index = 0 : 返回值不为null,表示找到的KVNode;返回值为null,影响index = 2  <br/>
-     * 2. index = 1 : 当index = 0的值为null时,表示找的最近的节点; 当index = 0的值不为null时,表示找到的节点
+     * @param value 要查找的值
+     * @return 1. index = 0 : 表示是否找到value;true表示找到,false表示未找到,影响index = 2,index = 3  <br/>
+     * 2. index = 1 : 当index = 0的值为false时,表示找的最近的节点;当index = 0为true时,其值无效 <br/>
+     * 3. index = 2 : 当index = 0的值为false时,表示参数value与最近节点的value与的大小关系.大于0，表示参数value > 最近节点的value,反之，参数value < 最近节点的value;当index = 0为true时,其值无效 <br/>
      */
-    protected Object[] find(BinaryNode start, K key) {
-        Object[] objects = new Object[2];
+    protected Object[] find(BinaryNode start, T value) {
+        Object[] objects = new Object[3];
         BinaryNode parent = start;
         int result = 0;
 
         while (start != null) {
             parent = start;
-            if ((result = comparator.compare((K) start.kvNode.key, key)) == 0) {
-                objects[0] = start.kvNode;
-                objects[1] = start;
-                break;
+            if ((result = comparator.compare(value, (T) start.value)) == 0) {
+                objects[0] = true;
+                return objects;
             }
 
             start = result < 0 ? start.left : start.right;
         }
 
-        objects[0] = null;
+        objects[0] = false;
         objects[1] = parent;
+        objects[2] = result;
         return objects;
     }
 
     /**
-     * 按照key将两个KVNode从小到大排序
+     * 将保存value的数组排序从小到大排序
      *
-     * @return 返回从小到大的数组，
+     * @return 返回从小到大的数组
+     * @throws IllegalArgumentException 当values = null时抛出异常
      */
-    protected final KVNode[] sort(KVNode[] nodes) {
-        return Arrays.shellSort(nodes, (node1, node2) -> comparator.compare((K) (node1.key), (K) (node2.key))).orElse(null);
+    protected final void sort(Object[] values) throws IllegalArgumentException {
+        Arrays.shellSort(values, (value1, value2) -> comparator.compare((T) value1, (T) value2));
     }
 
     /**

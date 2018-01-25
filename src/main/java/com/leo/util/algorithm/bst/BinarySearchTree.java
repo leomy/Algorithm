@@ -1,7 +1,5 @@
 package com.leo.util.algorithm.bst;
 
-import java.util.Optional;
-
 /**
  * 二叉查找树顶层接口 <br/>
  * Note: 由于用key做比较，因此建议: <br/>
@@ -13,26 +11,25 @@ import java.util.Optional;
  * @date: 2018/1/19
  * @since 1.0
  */
-public interface BinarySearchTree<K, V> {
+public interface BinarySearchTree<T> {
 
     /**
-     * 将节点放入树中. 当节点已存在时,则更新value
+     * 将元素放入树中
      *
-     * @param key   键,不允许为空
-     * @param value 值,不允许为空
-     * @return 返回旧的value值或null
-     * @throws IllegalArgumentException 当key或value为null时，抛出异常
+     * @param value 元素
+     * @return 返回旧的
+     * @throws IllegalArgumentException 当t = null时，抛出异常
      */
-    Optional put(K key, V value) throws IllegalArgumentException;
+    void put(T value) throws IllegalArgumentException;
 
     /**
-     * 根据key查找value
+     * 是否包含元素
      *
-     * @param key 键
+     * @param value
      * @return 返回查找到的value或null
-     * @throws IllegalArgumentException 当key = null时，抛出异常
+     * @throws IllegalArgumentException 当t = null时，抛出异常
      */
-    Optional<V> get(K key) throws IllegalArgumentException;
+    boolean contains(T value) throws IllegalArgumentException;
 
     /**
      * 获取树高
