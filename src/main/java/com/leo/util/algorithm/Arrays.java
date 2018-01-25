@@ -18,147 +18,6 @@ public final class Arrays {
     }
 
     /**
-     * 冒泡排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
-     *
-     * @param array 待排序的数组
-     * @return 排序(以从小到大的顺序)完的数组
-     */
-    public static final Optional<int[]> bubbleSort(int[] array) {
-        if (array != null) {
-            return Optional.empty();
-        }
-
-        for (int i = 0, length = array.length - 1; i < length; i++) {
-            int min = array[i];
-            for (int j = i + 1, limit = array.length; j < limit; j++) {
-                if (array[j] < min) {
-                    swap(array, i, j);
-                }
-            }
-        }
-
-        return Optional.of(array);
-    }
-
-    /**
-     * 选择排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
-     *
-     * @param array 待排序的数组
-     * @return 排序(以从小到大的顺序)完的数组
-     */
-    public static final Optional<int[]> selectSort(int[] array) {
-        if (array == null) {
-            return Optional.empty();
-        }
-
-        for (int i = 0, length = array.length - 1; i < length; i++) {
-            int position = i;
-            for (int j = i + 1, limit = array.length; j < limit; j++) {
-                if (array[j] < array[position]) {
-                    position = j;
-                }
-            }
-            if (position != i) {
-                swap(array, i, position);
-            }
-        }
-
-        return Optional.of(array);
-    }
-
-    /**
-     * 插入排序.按照升序排序.时间复杂度O(n ^ 2).
-     * Note: 适用范围(数组部分有序): <br/>
-     * 1. 数组中每个元素距它的最终位置不远 <br/>
-     * 2. 一个有序的大数组接上一个小数组 <br/>
-     * 3. 数组中只有几个元素位置不正确 <br/>
-     *
-     * @param array 待排序的数组
-     * @return 排序(以从小到大的顺序)完的数组
-     */
-    public static final Optional<int[]> insertSort(int[] array) {
-        if (array == null) {
-            return Optional.empty();
-        }
-
-        for (int i = 1, length = array.length; i < length; i++) {
-            int index = i;
-            while (index > 0 && array[index] < array[index - 1]) {
-                array[index - 1] = array[index];
-                index--;
-            }
-            if (index != i) {
-                array[index] = array[i];
-            }
-        }
-
-        return Optional.of(array);
-    }
-
-    /**
-     * 希尔排序.在插入排序的基础上改进.
-     *
-     * @param array 待排序的数组
-     * @return 排序(以从小到大的顺序)完的数组
-     */
-    public static final Optional<int[]> shellSort(int[] array) {
-        if (array == null) {
-            return Optional.empty();
-        }
-
-        int h = 1, hMax = array.length / 3;
-        while (h < hMax) {
-            h = 3 * h + 1;
-        }
-
-        while (h >= 1) {
-            for (int i = 1, lenght = array.length; i < lenght; i++) {
-                for (int j = i; j >= h && array[j] < array[j - h]; j -= h) {
-                    swap(array, j, j - h);
-                }
-            }
-            h /= 3;
-        }
-
-        return Optional.of(array);
-    }
-
-    /**
-     * 希尔排序.在插入排序的基础上改进.
-     *
-     * @param array      待排序的数组
-     * @param comparator 比较器.自定义排序规则
-     * @return 排序(以从小到大的顺序)完的数组
-     * @throws IllegalArgumentException 当comparator为空时，抛出异常
-     */
-    public static final <E> Optional<E[]> shellSort(E[] array, Comparator<E> comparator) throws IllegalArgumentException {
-        if (comparator == null) {
-            throw new IllegalArgumentException();
-        }
-
-        if (array == null) {
-            return Optional.empty();
-        }
-
-        int h = 1, hMax = array.length / 3;
-        while (h < hMax) {
-            h = 3 * h + 1;
-        }
-
-        while (h >= 1) {
-            for (int i = 1, lenght = array.length; i < lenght; i++) {
-                for (int j = i; j >= h && comparator.compare(array[j], array[j - h]) < 0; j -= h) {
-                    swap(array, j, j - h);
-                }
-            }
-            h /= 3;
-        }
-
-        return Optional.of(array);
-    }
-
-
-    /**
      * 在数组的 [0,array.length) 范围内查找key
      *
      * @param array 按从小到大顺序排列好的数组
@@ -319,6 +178,147 @@ public final class Arrays {
         E temp = array[index1];
         array[index1] = array[index2];
         array[index2] = temp;
+    }
+
+
+    /**
+     * 冒泡排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
+     *
+     * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
+     */
+    public static final Optional<int[]> bubbleSort(int[] array) {
+        if (array != null) {
+            return Optional.empty();
+        }
+
+        for (int i = 0, length = array.length - 1; i < length; i++) {
+            int min = array[i];
+            for (int j = i + 1, limit = array.length; j < limit; j++) {
+                if (array[j] < min) {
+                    swap(array, i, j);
+                }
+            }
+        }
+
+        return Optional.of(array);
+    }
+
+    /**
+     * 选择排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
+     *
+     * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
+     */
+    public static final Optional<int[]> selectSort(int[] array) {
+        if (array == null) {
+            return Optional.empty();
+        }
+
+        for (int i = 0, length = array.length - 1; i < length; i++) {
+            int position = i;
+            for (int j = i + 1, limit = array.length; j < limit; j++) {
+                if (array[j] < array[position]) {
+                    position = j;
+                }
+            }
+            if (position != i) {
+                swap(array, i, position);
+            }
+        }
+
+        return Optional.of(array);
+    }
+
+    /**
+     * 插入排序.按照升序排序.时间复杂度O(n ^ 2).
+     * Note: 适用范围(数组部分有序): <br/>
+     * 1. 数组中每个元素距它的最终位置不远 <br/>
+     * 2. 一个有序的大数组接上一个小数组 <br/>
+     * 3. 数组中只有几个元素位置不正确 <br/>
+     *
+     * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
+     */
+    public static final Optional<int[]> insertSort(int[] array) {
+        if (array == null) {
+            return Optional.empty();
+        }
+
+        for (int i = 1, length = array.length; i < length; i++) {
+            int index = i;
+            while (index > 0 && array[index] < array[index - 1]) {
+                array[index - 1] = array[index];
+                index--;
+            }
+            if (index != i) {
+                array[index] = array[i];
+            }
+        }
+
+        return Optional.of(array);
+    }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进.
+     *
+     * @param array 待排序的数组
+     * @return 排序(以从小到大的顺序)完的数组
+     */
+    public static final Optional<int[]> shellSort(int[] array) {
+        if (array == null) {
+            return Optional.empty();
+        }
+
+        int h = 1, hMax = array.length / 3;
+        while (h < hMax) {
+            h = 3 * h + 1;
+        }
+
+        while (h >= 1) {
+            for (int i = 1, lenght = array.length; i < lenght; i++) {
+                for (int j = i; j >= h && array[j] < array[j - h]; j -= h) {
+                    swap(array, j, j - h);
+                }
+            }
+            h /= 3;
+        }
+
+        return Optional.of(array);
+    }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进.
+     *
+     * @param array      待排序的数组
+     * @param comparator 比较器.自定义排序规则
+     * @return 排序(以从小到大的顺序)完的数组
+     * @throws IllegalArgumentException 当comparator为空时，抛出异常
+     */
+    public static final <E> Optional<E[]> shellSort(E[] array, Comparator<E> comparator) throws IllegalArgumentException {
+        if (comparator == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (array == null) {
+            return Optional.empty();
+        }
+
+        int h = 1, hMax = array.length / 3;
+        while (h < hMax) {
+            h = 3 * h + 1;
+        }
+
+        while (h >= 1) {
+            for (int i = 1, lenght = array.length; i < lenght; i++) {
+                for (int j = i; j >= h && comparator.compare(array[j], array[j - h]) < 0; j -= h) {
+                    swap(array, j, j - h);
+                }
+            }
+            h /= 3;
+        }
+
+        return Optional.of(array);
     }
 
 }
