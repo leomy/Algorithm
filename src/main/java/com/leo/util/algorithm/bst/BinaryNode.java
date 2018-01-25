@@ -33,6 +33,10 @@ public class BinaryNode {
      */
     protected BinaryNode right;
 
+    protected BinaryNode(KVNode kvNode) {
+        this(kvNode, null, null);
+    }
+
     protected BinaryNode(KVNode kvNode, BinaryNode left, BinaryNode right) {
         this.kvNode = kvNode;
         this.left = left;
@@ -60,25 +64,29 @@ public class BinaryNode {
      * 两个节点建立左连接关系
      *
      * @param leftChild 要被设置城的左子节节点
+     * @return 返回当前节点,便于链式调用
      */
-    protected void buildLeftRelation(BinaryNode leftChild) {
+    protected BinaryNode buildLeftRelation(BinaryNode leftChild) {
         if (leftChild != null) {
             leftChild.parent = this;
         }
 
         this.left = leftChild;
+        return this;
     }
 
     /**
      * 两个节点建立右连接关系
      *
      * @param rightChild 要被设置城的父节点
+     * @return 返回当前节点,便于链式调用
      */
-    protected void buildRightRelation(BinaryNode rightChild) {
+    protected BinaryNode buildRightRelation(BinaryNode rightChild) {
         if (rightChild != null) {
             rightChild.parent = this;
         }
 
         this.right = rightChild;
+        return this;
     }
 }

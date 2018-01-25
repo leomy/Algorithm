@@ -68,9 +68,6 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
      */
     private static class TwoNode extends BinaryNode {
 
-        /**
-         * flag = true时，表示2-节点; flag = false时,表示3-节点
-         */
         NodeFlag nodeFlag;
 
         {
@@ -123,13 +120,16 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
          * 两个节点建立中连接关系
          *
          * @param centerChild 要被设置成的中子节点
+         * @return 返回当前节点, 便于链式调用
          */
-        void buildCenterRelation(TwoNode centerChild) {
+
+        ThreeNode buildCenterRelation(TwoNode centerChild) {
             if (centerChild != null) {
                 centerChild.parent = this;
             }
 
             this.center = centerChild;
+            return this;
         }
     }
 
@@ -176,25 +176,31 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
          * 两个节点建立左中连接关系
          *
          * @param leftCenterChild 要被设置成的中子节点
+         * @return 返回当前节点, 便于链式调用
          */
-        void buildLeftCenterRelation(TwoNode leftCenterChild) {
+
+
+        FourNode buildLeftCenterRelation(TwoNode leftCenterChild) {
             if (leftCenterChild != null) {
                 leftCenterChild.parent = this;
             }
             this.leftCenter = leftCenterChild;
+            return this;
         }
 
         /**
          * 两个节点建立左中连接关系
          *
          * @param rightCenterChild 要被设置成的中子节点
+         * @return 返回当前节点, 便于链式调用
          */
-        void buildRightCenterRelation(TwoNode rightCenterChild) {
+        FourNode buildRightCenterRelation(TwoNode rightCenterChild) {
             if (rightCenterChild != null) {
                 rightCenterChild.parent = this;
             }
 
             this.rightCenter = rightCenterChild;
+            return this;
         }
     }
 
@@ -245,8 +251,8 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
                 // 3.2 表示当前节点为3节点,裂变成3个2-节点,树高加1
                 KVNode[] nodes = sort(new KVNode[]{root.kvNode, kvNode, ((ThreeNode) root).maxKVNode});
                 TwoNode newRoot = new TwoNode(nodes[1]);
-                newRoot.buildLeftRelation(new TwoNode(nodes[0]));
-                newRoot.buildRightRelation(new TwoNode(nodes[2]));
+                newRoot.buildLeftRelation(new TwoNode(nodes[0]))
+                        .buildRightRelation(new TwoNode(nodes[2]));
                 root = newRoot;
                 root.parent = newRoot;
                 hight++;
@@ -260,8 +266,8 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             if (!node.getClass().equals(ThreeNode.class)) {
                 ThreeNode threeNode = new ThreeNode(nodes[0], nodes[1]);
                 replace(threeNode, node);
-                threeNode.buildLeftRelation(node.left);
-                threeNode.buildRightRelation(node.right);
+                threeNode.buildLeftRelation(node.left)
+                        .buildRightRelation(node.right);
             } else {
                 node.nodeFlag = NodeFlag.THREE;
                 ((ThreeNode) node).kvNode = nodes[0];
@@ -282,26 +288,18 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
 
     }
 
-    @Override
-    public Optional<V> get(K key) throws IllegalArgumentException {
-        if (key == null) {
-            throw new IllegalArgumentException();
-        }
-
-        Object[] objects = find((TwoNode) root, key);
-        return Optional.ofNullable(objects[0] == null ? null : (V) ((KVNode) objects[0]).value);
-    }
-
     /**
-     * 查找操作
+     * 根据key在以start为起始节点的树中查找
      *
-     * @param node 起始节点,没有做空处理
-     * @param key  键
+     * @param start 起始节点,没有做空处理
+     * @param key   键
      * @return 如果返回值不为null, 则返回的数组中，其索引对应的值表示为: <br/>
      * 1. index = 0 : 如果不为null,用来标识找到的到底是哪一个k-v键值.影响后面的索引对应的值 <br/>
      * 2. index = 1 当0所对应的值为null时,表示找到和key最相近的node; 反之,表示找到的了与key相等的node <br/>
      */
-    private Object[] find(TwoNode node, final K key) {
+    @Override
+    protected Object[] find(BinaryNode start, K key) {
+        TwoNode node = (TwoNode) start;
         Object[] objects = new Object[2];
         TwoNode parent = node;
 
@@ -314,7 +312,6 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
                 break;
             } else if (result < 0) {
                 node = (TwoNode) node.left;
-                continue;
             } else if (node.nodeFlag.equals(NodeFlag.TWO)) {
                 node = (TwoNode) node.right;
             } else {
@@ -343,13 +340,12 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             root = new TwoNode(fourNode.middleKVNode);
             root.parent = root;
 
-            root.buildLeftRelation(new TwoNode(fourNode.kvNode));
-            root.buildRightRelation(new TwoNode(fourNode.maxKVNode));
-
-            root.left.buildLeftRelation(fourNode.left);
-            root.left.buildRightRelation(fourNode.leftCenter);
-            root.right.buildLeftRelation(fourNode.rightCenter);
-            root.right.buildRightRelation(fourNode.right);
+            root.buildLeftRelation(new TwoNode(fourNode.kvNode))
+                    .buildRightRelation(new TwoNode(fourNode.maxKVNode));
+            root.left.buildLeftRelation(fourNode.left)
+                    .buildRightRelation(fourNode.leftCenter);
+            root.right.buildLeftRelation(fourNode.rightCenter)
+                    .buildRightRelation(fourNode.right);
 
             hight++;
             return;
@@ -379,27 +375,27 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
                 parentIsThreeNode.maxKVNode = parent.kvNode;
                 parentIsThreeNode.kvNode = fourNode.middleKVNode;
 
-                parentIsThreeNode.buildLeftRelation(new TwoNode(fourNode.kvNode));
-                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.maxKVNode));
-                parentIsThreeNode.buildRightRelation(parent.right);
+                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.maxKVNode))
+                        .buildLeftRelation(new TwoNode(fourNode.kvNode))
+                        .buildRightRelation(parent.right);
 
-                parentIsThreeNode.left.buildLeftRelation(fourNode.left);
-                parentIsThreeNode.left.buildRightRelation(fourNode.leftCenter);
-                parentIsThreeNode.center.buildLeftRelation(fourNode.rightCenter);
-                parentIsThreeNode.center.buildRightRelation(fourNode.right);
+                parentIsThreeNode.left.buildLeftRelation(fourNode.left)
+                        .buildRightRelation(fourNode.leftCenter);
+                parentIsThreeNode.center.buildLeftRelation(fourNode.rightCenter)
+                        .buildRightRelation(fourNode.right);
             } else {
                 // 2.2 从parent右侧插入.广度+先序设置
                 parentIsThreeNode.kvNode = parent.kvNode;
                 parentIsThreeNode.maxKVNode = fourNode.middleKVNode;
 
-                parentIsThreeNode.buildLeftRelation(parent.left);
-                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.kvNode));
-                parentIsThreeNode.buildRightRelation(new TwoNode(fourNode.maxKVNode));
+                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.kvNode))
+                        .buildLeftRelation(parent.left)
+                        .buildRightRelation(new TwoNode(fourNode.maxKVNode));
 
-                parentIsThreeNode.center.buildLeftRelation(fourNode.left);
-                parentIsThreeNode.center.buildRightRelation(fourNode.leftCenter);
-                parentIsThreeNode.right.buildLeftRelation(fourNode.rightCenter);
-                parentIsThreeNode.right.buildRightRelation(fourNode.right);
+                parentIsThreeNode.center.buildLeftRelation(fourNode.left)
+                        .buildRightRelation(fourNode.leftCenter);
+                parentIsThreeNode.right.buildLeftRelation(fourNode.rightCenter)
+                        .buildRightRelation(fourNode.right);
             }
             return;
         }
@@ -424,28 +420,28 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             fourNode.kvNode = fourNode.middleKVNode;
             fourNode.middleKVNode = parentIsThreeNode.kvNode;
             fourNode.maxKVNode = parentIsThreeNode.maxKVNode;
-            fourNode.buildLeftRelation(left);
-            fourNode.buildLeftCenterRelation(right);
-            fourNode.buildRightCenterRelation(parentIsThreeNode.center);
-            fourNode.buildRightRelation(parentIsThreeNode.right);
+            fourNode.buildLeftCenterRelation(right)
+                    .buildRightCenterRelation(parentIsThreeNode.center)
+                    .buildLeftRelation(left)
+                    .buildRightRelation(parentIsThreeNode.right);
         } else if (direction.equals(Direction.CENTER)) {
             // 3.1.2 child在parent中间子树上
             fourNode.kvNode = fourNode.middleKVNode;
             fourNode.middleKVNode = parentIsThreeNode.kvNode;
             fourNode.maxKVNode = parentIsThreeNode.maxKVNode;
-            fourNode.buildLeftRelation(parentIsThreeNode.left);
-            fourNode.buildLeftCenterRelation(left);
-            fourNode.buildRightCenterRelation(right);
-            fourNode.buildRightRelation(parentIsThreeNode.right);
+            fourNode.buildLeftCenterRelation(left)
+                    .buildRightCenterRelation(right)
+                    .buildLeftRelation(parentIsThreeNode.left)
+                    .buildRightRelation(parentIsThreeNode.right);
         } else {
             // 3.1.3 child在parent右子树上
             fourNode.maxKVNode = fourNode.middleKVNode;
             fourNode.kvNode = parentIsThreeNode.kvNode;
             fourNode.middleKVNode = parentIsThreeNode.maxKVNode;
-            fourNode.buildLeftRelation(parentIsThreeNode.left);
-            fourNode.buildLeftCenterRelation(parentIsThreeNode.center);
-            fourNode.buildRightCenterRelation(left);
-            fourNode.buildRightRelation(right);
+            fourNode.buildLeftCenterRelation(parentIsThreeNode.center)
+                    .buildRightCenterRelation(left)
+                    .buildLeftRelation(parentIsThreeNode.left)
+                    .buildRightRelation(right);
         }
         decomposeFourNode(fourNode);
     }
