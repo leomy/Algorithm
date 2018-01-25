@@ -14,9 +14,51 @@ import java.util.Optional;
 public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implements BinarySearchTree<K, V> {
 
     /**
-     * 保存根节点
+     * 标识时哪种节点
      */
-    protected TwoNode root;
+    private enum NodeFlag {
+
+        /**
+         * 2-节点
+         */
+        TWO,
+
+        /**
+         * 3-节点
+         */
+        THREE,
+
+        /**
+         * 4-节点
+         */
+        FOUR,
+    }
+
+    /**
+     * 记录两个节点的直接关系
+     */
+    private enum Direction {
+
+        /**
+         * child在parent左边
+         */
+        LEFT,
+
+        /**
+         * child在parent中间
+         */
+        CENTER,
+
+        /**
+         * child在parent右边
+         */
+        RIGHT,
+
+        /**
+         * 两个节点没有关系
+         */
+        NONE,
+    }
 
     /**
      * 2-节点.
@@ -29,18 +71,14 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
         /**
          * flag = true时，表示2-节点; flag = false时,表示3-节点
          */
-        boolean flag;
+        NodeFlag nodeFlag;
 
         {
-            flag = true;
+            nodeFlag = NodeFlag.TWO;
         }
 
         TwoNode(KVNode kvNode) {
             this(kvNode, null, null, null);
-        }
-
-        TwoNode(KVNode kvNode, BinaryNode left, BinaryNode right) {
-            this(kvNode, null, left, right);
         }
 
         TwoNode(KVNode kvNode, TwoNode parent, BinaryNode left, BinaryNode right) {
@@ -61,7 +99,7 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
         /**
          * 另一个K-V节点，是两个节点中key最大的一个
          */
-        KVNode rightKVNode;
+        KVNode maxKVNode;
 
         /**
          * 指向中间节点
@@ -69,20 +107,16 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
         TwoNode center;
 
         {
-            flag = false;
+            nodeFlag = NodeFlag.THREE;
         }
 
-        public ThreeNode() {
-            this(null, null);
+        ThreeNode(KVNode kvNode, KVNode maxKVNode) {
+            this(kvNode, maxKVNode, null, null, null);
         }
 
-        ThreeNode(KVNode kvNode, KVNode rightKVNode) {
-            this(kvNode, rightKVNode, null, null, null);
-        }
-
-        ThreeNode(KVNode kvNode, KVNode rightKVNode, TwoNode parent, BinaryNode left, BinaryNode right) {
+        ThreeNode(KVNode kvNode, KVNode maxKVNode, TwoNode parent, BinaryNode left, BinaryNode right) {
             super(kvNode, parent, left, right);
-            this.rightKVNode = rightKVNode;
+            this.maxKVNode = maxKVNode;
         }
 
         /**
@@ -97,20 +131,73 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
 
             this.center = centerChild;
         }
+    }
 
+    /**
+     * 4-节点.仅做中间状态用
+     */
+    private static class FourNode extends TwoNode {
 
         /**
-         * 将oldNode父节点的相应指向变成当前节点，且将当前节点的的parent指向oldNode的父节点
-         *
-         * @param oldNode 要被替换的旧节点
-         * @return 返回true, 替换成功.返回false,替换失败
+         * 保存中间大小的KVNode
          */
-        void replace(TwoNode oldNode) {
-            if (!super.replace(oldNode)) {
-                ((ThreeNode) oldNode.parent).buildCenterRelation(this);
+        KVNode middleKVNode;
+
+        /**
+         * 保存最大的KVNode
+         */
+        KVNode maxKVNode;
+
+        /**
+         * 保存left center
+         */
+        TwoNode leftCenter;
+
+        /**
+         * 保存right center
+         */
+        TwoNode rightCenter;
+
+        {
+            nodeFlag = NodeFlag.FOUR;
+        }
+
+        FourNode(KVNode kvNode, KVNode middleKVNode, KVNode maxKVNode,
+                 TwoNode parent,
+                 BinaryNode left, TwoNode leftCenter, TwoNode rightCenter, BinaryNode right) {
+            super(kvNode, parent, left, right);
+            this.middleKVNode = middleKVNode;
+            this.maxKVNode = maxKVNode;
+            this.leftCenter = leftCenter;
+            this.rightCenter = rightCenter;
+        }
+
+        /**
+         * 两个节点建立左中连接关系
+         *
+         * @param leftCenterChild 要被设置成的中子节点
+         */
+        void buildLeftCenterRelation(TwoNode leftCenterChild) {
+            if (leftCenterChild != null) {
+                leftCenterChild.parent = this;
             }
+            this.leftCenter = leftCenterChild;
+        }
+
+        /**
+         * 两个节点建立左中连接关系
+         *
+         * @param rightCenterChild 要被设置成的中子节点
+         */
+        void buildRightCenterRelation(TwoNode rightCenterChild) {
+            if (rightCenterChild != null) {
+                rightCenterChild.parent = this;
+            }
+
+            this.rightCenter = rightCenterChild;
         }
     }
+
 
     public TwoThreeTree() {
         this(null);
@@ -120,45 +207,79 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
         super(comparator);
     }
 
-    /**
-     * root为一个3-节点裂变成3个2-节点时，原来的center节点应该添加在哪个位置
-     */
-    private static enum CenterDirection {
-
-        // root->left->right
-        ROOT_LEFT_RIGHT,
-
-        // root->right->left
-        ROOT_RIGHT_LEFT,
-
-        // 不添加
-        NONE
-    }
-
     @Override
     public Optional<V> put(K key, V value) throws IllegalArgumentException {
         if (key == null || value == null) {
             throw new IllegalArgumentException();
         }
 
+        // 1. 此时root节点为null,新建、设置并返回
         if (root == null) {
             root = new TwoNode(new KVNode(key, value));
             root.parent = root;
+            hight = 1;
             return Optional.empty();
         }
 
-        // 找到节点并更新value
-        KVNode kvNode = null;
-        TwoNode node = find(root, key, kvNode);
+        // 2. 此时节点处于树中,更新value并返回旧value
+        Object[] objects = find((TwoNode) root, key);
+        KVNode kvNode = (KVNode) objects[0];
         if (kvNode != null) {
             V oldValue = (V) kvNode.value;
             kvNode.value = value;
             return Optional.of(oldValue);
         }
 
-        put0(node, new KVNode(key, value), CenterDirection.NONE);
+        TwoNode node = (TwoNode) objects[1];
+        kvNode = new KVNode(key, value);
 
+        // 3. 此时树高为1时,root变成3-节点或变成4-节点(分裂)并返回
+        if (hight < 2) {
+            if (node.nodeFlag.equals(NodeFlag.TWO)) {
+                // 3.1 表示当前节点是个2-节点,直接变成一个三节点
+                KVNode[] nodes = sort(new KVNode[]{kvNode, node.kvNode});
+                ThreeNode newRoot = new ThreeNode(nodes[0], nodes[1]);
+                root = newRoot;
+                root.parent = newRoot;
+            } else {
+                // 3.2 表示当前节点为3节点,裂变成3个2-节点,树高加1
+                KVNode[] nodes = sort(new KVNode[]{root.kvNode, kvNode, ((ThreeNode) root).maxKVNode});
+                TwoNode newRoot = new TwoNode(nodes[1]);
+                newRoot.buildLeftRelation(new TwoNode(nodes[0]));
+                newRoot.buildRightRelation(new TwoNode(nodes[2]));
+                root = newRoot;
+                root.parent = newRoot;
+                hight++;
+            }
+            return Optional.empty();
+        }
+
+        // 4. 此时node为 2-节点.直接变成3-节点,返回
+        if (node.nodeFlag.equals(NodeFlag.TWO)) {
+            KVNode[] nodes = sort(new KVNode[]{kvNode, node.kvNode});
+            if (!node.getClass().equals(ThreeNode.class)) {
+                ThreeNode threeNode = new ThreeNode(nodes[0], nodes[1]);
+                replace(threeNode, node);
+                threeNode.buildLeftRelation(node.left);
+                threeNode.buildRightRelation(node.right);
+            } else {
+                node.nodeFlag = NodeFlag.THREE;
+                ((ThreeNode) node).kvNode = nodes[0];
+                ((ThreeNode) node).maxKVNode = nodes[1];
+            }
+            return Optional.empty();
+        }
+
+        // 5. 此时node为3-节点,变成4-节点并处理
+        ThreeNode threeNode = (ThreeNode) node;
+        KVNode[] nodes = sort(new KVNode[]{kvNode, threeNode.kvNode, threeNode.maxKVNode});
+        FourNode fourNode = new FourNode(nodes[0], nodes[1], nodes[2],
+                (TwoNode) node.parent,
+                threeNode.left, threeNode.center, null, threeNode.right);
+        replace(fourNode, node);
+        decomposeFourNode(fourNode);
         return Optional.empty();
+
     }
 
     @Override
@@ -167,233 +288,177 @@ public class TwoThreeTree<K, V> extends AbstractBinarySearchTree<K, V> implement
             throw new IllegalArgumentException();
         }
 
-        KVNode kvNode = null;
-        find(root, key, kvNode);
-        return Optional.ofNullable(kvNode == null ? null : (V) kvNode.value);
+        Object[] objects = find((TwoNode) root, key);
+        return Optional.ofNullable(objects[0] == null ? null : (V) ((KVNode) objects[0]).value);
     }
 
     /**
      * 查找操作
      *
-     * @param root   起始节点
-     * @param key    键
-     * @param kvNode 输出参数.如果不为null,用来标识找到的到底是哪一个k-v键值对
-     * @return kvNode != null时,表示找到节点; 反之，表示找到插入时的父节点
+     * @param node 起始节点,没有做空处理
+     * @param key  键
+     * @return 如果返回值不为null, 则返回的数组中，其索引对应的值表示为: <br/>
+     * 1. index = 0 : 如果不为null,用来标识找到的到底是哪一个k-v键值.影响后面的索引对应的值 <br/>
+     * 2. index = 1 当0所对应的值为null时,表示找到和key最相近的node; 反之,表示找到的了与key相等的node <br/>
      */
-    private TwoNode find(final TwoNode root, final K key, KVNode kvNode) {
-        TwoNode parent = root, node = root;
-        int result = 0;
+    private Object[] find(TwoNode node, final K key) {
+        Object[] objects = new Object[2];
+        TwoNode parent = node;
 
         while (node != null) {
+            int result;
             parent = node;
             if ((result = comparator.compare(key, (K) node.kvNode.key)) == 0) {
-                kvNode = node.kvNode;
-                return node;
-            }
-            if (result < 0) {
+                objects[0] = node.kvNode;
+                objects[1] = node;
+                break;
+            } else if (result < 0) {
                 node = (TwoNode) node.left;
                 continue;
-            }
-
-            if (node.flag) {
+            } else if (node.nodeFlag.equals(NodeFlag.TWO)) {
                 node = (TwoNode) node.right;
             } else {
                 ThreeNode threeNode = (ThreeNode) node;
-                if ((result = comparator.compare(key, (K) threeNode.rightKVNode.key)) == 0) {
-                    kvNode = threeNode.rightKVNode;
-                    return threeNode;
+                if ((result = comparator.compare(key, (K) threeNode.maxKVNode.key)) == 0) {
+                    objects[0] = threeNode.maxKVNode;
+                    objects[1] = threeNode;
+                    break;
                 }
                 node = (result < 0 ? threeNode.center : (TwoNode) threeNode.right);
             }
         }
 
-        return parent;
+        objects[1] = parent;
+        return objects;
     }
 
     /**
-     * 真正实现put操作
+     * 分解4-节点
      *
-     * @param node   最近的节点
-     * @param kvNode kv键值对
-     * @return
+     * @param fourNode 要被分解的4-节点
      */
-    private void put0(TwoNode node, KVNode kvNode, CenterDirection centerDirection) {
-        // 1. 检查是否为root节点
-        if (checkRoot(node, kvNode, centerDirection)) {
+    private void decomposeFourNode(FourNode fourNode) {
+        // 1 此时root为4-节点,变为3个2-节点,树高加1,返回
+        if (root.equals(fourNode)) {
+            root = new TwoNode(fourNode.middleKVNode);
+            root.parent = root;
+
+            root.buildLeftRelation(new TwoNode(fourNode.kvNode));
+            root.buildRightRelation(new TwoNode(fourNode.maxKVNode));
+
+            root.left.buildLeftRelation(fourNode.left);
+            root.left.buildRightRelation(fourNode.leftCenter);
+            root.right.buildLeftRelation(fourNode.rightCenter);
+            root.right.buildRightRelation(fourNode.right);
+
+            hight++;
             return;
         }
 
-        KVNode max = null, middle = null, min = null;
+        TwoNode parent = (TwoNode) fourNode.parent;
+        Direction direction = Direction.NONE;
+        if (fourNode.equals(parent.left)) {
+            direction = Direction.LEFT;
+        } else if (fourNode.equals(parent.right)) {
+            direction = Direction.RIGHT;
+        }
 
-        // 2. 此时node为 2-节点.直接变成3-节点
-        if (node.flag) {
-            KVNode[] nodes = {node.kvNode, kvNode};
-            sort(nodes);
-            min = nodes[0];
-            max = nodes[1];
-            ThreeNode threeNode = null;
-
-            if (!node.getClass().equals(ThreeNode.class)) {
-                threeNode = new ThreeNode(min, max);
-                threeNode.replace(node);
-                threeNode.buildLeftRelation(node.left);
-                threeNode.buildRightRelation(node.right);
+        // 2. 此时parent是2-节点,直接变成3-节点,返回
+        ThreeNode parentIsThreeNode;
+        if (parent.nodeFlag.equals(NodeFlag.TWO)) {
+            if (!parent.getClass().equals(ThreeNode.class)) {
+                parentIsThreeNode = new ThreeNode(null, null);
+                replace(parentIsThreeNode, parent);
             } else {
-                threeNode = (ThreeNode) node;
-                threeNode.flag = false;
-                threeNode.kvNode = min;
-                threeNode.rightKVNode = max;
+                parentIsThreeNode = (ThreeNode) parent;
+                parent.nodeFlag = NodeFlag.THREE;
+            }
+
+            if (direction.equals(Direction.LEFT)) {
+                // 2.1 从parent左侧插入,广度+先序设置
+                parentIsThreeNode.maxKVNode = parent.kvNode;
+                parentIsThreeNode.kvNode = fourNode.middleKVNode;
+
+                parentIsThreeNode.buildLeftRelation(new TwoNode(fourNode.kvNode));
+                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.maxKVNode));
+                parentIsThreeNode.buildRightRelation(parent.right);
+
+                parentIsThreeNode.left.buildLeftRelation(fourNode.left);
+                parentIsThreeNode.left.buildRightRelation(fourNode.leftCenter);
+                parentIsThreeNode.center.buildLeftRelation(fourNode.rightCenter);
+                parentIsThreeNode.center.buildRightRelation(fourNode.right);
+            } else {
+                // 2.2 从parent右侧插入.广度+先序设置
+                parentIsThreeNode.kvNode = parent.kvNode;
+                parentIsThreeNode.maxKVNode = fourNode.middleKVNode;
+
+                parentIsThreeNode.buildLeftRelation(parent.left);
+                parentIsThreeNode.buildCenterRelation(new TwoNode(fourNode.kvNode));
+                parentIsThreeNode.buildRightRelation(new TwoNode(fourNode.maxKVNode));
+
+                parentIsThreeNode.center.buildLeftRelation(fourNode.left);
+                parentIsThreeNode.center.buildRightRelation(fourNode.leftCenter);
+                parentIsThreeNode.right.buildLeftRelation(fourNode.rightCenter);
+                parentIsThreeNode.right.buildRightRelation(fourNode.right);
             }
             return;
         }
 
-        // 3. 此时node(表现、真正)为3-节点
-        ThreeNode threeNode = (ThreeNode) node;
-        TwoNode parentIsTwoNode = (TwoNode) threeNode.parent;
-        ThreeNode parentIsThreeNode = null;
-        KVNode[] nodes = new KVNode[]{threeNode.rightKVNode, kvNode, threeNode.kvNode};
-        sort(nodes);
-        min = nodes[0];
-        middle = nodes[1];
-        max = nodes[2];
-
-        // 3.1 此时parent表现为为2-节点，将parent变成3-节点
-        if (parentIsTwoNode.flag) {
-            if (!parentIsTwoNode.getClass().equals(ThreeNode.class)) {
-                parentIsThreeNode = new ThreeNode();
-                parentIsThreeNode.replace(parentIsTwoNode);
-            } else {
-                parentIsThreeNode = (ThreeNode) parentIsTwoNode;
-                parentIsThreeNode.flag = false;
-            }
-
-            if (threeNode.equals(parentIsTwoNode.left)) {
-                // 3.1.1 从parent左侧插入
-                // 3.1.1.1 parent.排序kvnode(middle为kvNode)、新增center(max变成knNode,将threeNode的right变成自己的right)、重建子树
-                parentIsThreeNode.rightKVNode = parentIsTwoNode.kvNode;
-                parentIsThreeNode.kvNode = middle;
-                parentIsThreeNode.buildLeftRelation(threeNode);
-                parentIsThreeNode.buildCenterRelation(new TwoNode(max));
-                parentIsThreeNode.buildRightRelation(parentIsTwoNode.right);
-                // 3.1.1.2 parent.center. 重建子树
-                parentIsThreeNode.center.buildRightRelation(threeNode.right);
-                // 3.1.1.3 threeNode. min变成kvNode,重建子树，
-                threeNode.kvNode = min;
-                threeNode.right = threeNode.center;
-            } else {
-                // 3.1.2 从parent右侧插入
-                // 3.1.2.1 parent. 排序kvnode(middle为rightKvNode)、新增center(min变成kvNode,将threeNode的left变成自己的)、重建子树
-                parentIsThreeNode.kvNode = parentIsTwoNode.kvNode;
-                parentIsThreeNode.rightKVNode = middle;
-                parentIsThreeNode.buildLeftRelation(parentIsTwoNode.left);
-                parentIsThreeNode.buildCenterRelation(new TwoNode(min));
-                parentIsThreeNode.buildRightRelation(threeNode);
-                // 3.1.2.3 parent.center. 重建子树
-                parentIsThreeNode.center.buildLeftRelation(threeNode.left);
-                // 3.1.2.2 threeNode. max变成kvNode,重建子树，并变成2-节点
-                threeNode.kvNode = max;
-                threeNode.left = threeNode.center;
-            }
-
-            // 3,1.2 使threeNode并变成2-节点
-            threeNode.flag = true;
-            threeNode.rightKVNode = null;
-            threeNode.center = null;
-            return;
+        // 3 此时parent为3-节点
+        parentIsThreeNode = (ThreeNode) parent;
+        if (direction.equals(Direction.NONE)) {
+            direction = Direction.CENTER;
         }
 
-        // 3.2. 此时parent为3-节点，insertParent表示要向父节点插入的KVNode
-        parentIsThreeNode = (ThreeNode) parentIsTwoNode;
-        KVNode insertParent = null;
-        //
+        // 3.1 将parent替换成4-节点,并递归处理parent
+        replace(fourNode, parent);
 
-        if (threeNode.equals(parentIsThreeNode.left)) {
-            // 3.2.1 从左侧插入,
-            threeNode.kvNode = min;
-            threeNode.rightKVNode = middle;
-            insertParent = max;
-            centerDirection = CenterDirection.ROOT_RIGHT_LEFT;
-        } else if (threeNode.equals(parentIsThreeNode.center)) {
-            // 3.2.2 从中间插入
-            threeNode.kvNode = min;
-            threeNode.rightKVNode = middle;
-            insertParent = max;
-            centerDirection = CenterDirection.ROOT_LEFT_RIGHT;
+        TwoNode left = new TwoNode(fourNode.kvNode);
+        left.buildLeftRelation(fourNode.left);
+        left.buildRightRelation(fourNode.leftCenter);
+        TwoNode right = new TwoNode(fourNode.maxKVNode);
+        right.buildLeftRelation(fourNode.rightCenter);
+        right.buildRightRelation(fourNode.right);
+        if (direction.equals(Direction.LEFT)) {
+            // 3.1.1 child在parent左子树上
+            fourNode.kvNode = fourNode.middleKVNode;
+            fourNode.middleKVNode = parentIsThreeNode.kvNode;
+            fourNode.maxKVNode = parentIsThreeNode.maxKVNode;
+            fourNode.buildLeftRelation(left);
+            fourNode.buildLeftCenterRelation(right);
+            fourNode.buildRightCenterRelation(parentIsThreeNode.center);
+            fourNode.buildRightRelation(parentIsThreeNode.right);
+        } else if (direction.equals(Direction.CENTER)) {
+            // 3.1.2 child在parent中间子树上
+            fourNode.kvNode = fourNode.middleKVNode;
+            fourNode.middleKVNode = parentIsThreeNode.kvNode;
+            fourNode.maxKVNode = parentIsThreeNode.maxKVNode;
+            fourNode.buildLeftRelation(parentIsThreeNode.left);
+            fourNode.buildLeftCenterRelation(left);
+            fourNode.buildRightCenterRelation(right);
+            fourNode.buildRightRelation(parentIsThreeNode.right);
         } else {
-            // 3.2.3 从右侧插入
-            threeNode.kvNode = middle;
-            threeNode.rightKVNode = max;
-            insertParent = min;
-            centerDirection = CenterDirection.ROOT_LEFT_RIGHT;
+            // 3.1.3 child在parent右子树上
+            fourNode.maxKVNode = fourNode.middleKVNode;
+            fourNode.kvNode = parentIsThreeNode.kvNode;
+            fourNode.middleKVNode = parentIsThreeNode.maxKVNode;
+            fourNode.buildLeftRelation(parentIsThreeNode.left);
+            fourNode.buildLeftCenterRelation(parentIsThreeNode.center);
+            fourNode.buildRightCenterRelation(left);
+            fourNode.buildRightRelation(right);
         }
-
-        put0((TwoNode) parentIsThreeNode.parent, insertParent, centerDirection);
+        decomposeFourNode(fourNode);
     }
 
     /**
-     * 检查node是否是root节点.
+     * 将oldNode父节点的相应指向(left,right,center)变成newNode，且将newNode节点的的parent指向oldNode的父节点
      *
-     * @param node
-     * @param kvNode
-     * @return 返回true, 则将kvNode插入到2-3树中; 返回false,则什么也不做
+     * @param newNode 要替换的新节点
+     * @param oldNode 要被替换的旧节点
      */
-    private boolean checkRoot(TwoNode node, KVNode kvNode, CenterDirection centerDirection) {
-        KVNode max = null, middle = null, min = null;
-        if (node.equals(root)) {
-            ThreeNode newRoot = null;
-
-            if (root.flag) {
-                // 1. 此时root表现为2-节点，将其变成3-节点
-                KVNode[] nodes = {node.kvNode, kvNode};
-                sort(nodes);
-                min = nodes[0];
-                max = nodes[1];
-
-                // 1.1 此时root真正类型为2-节点,则新建一个3-节点(将原来root的值拷贝过去、设置两个KVNode)，并将修改root
-                if (!root.getClass().equals(ThreeNode.class)) {
-                    newRoot = new ThreeNode(min, max);
-                    newRoot.buildLeftRelation(root.left);
-                    newRoot.buildRightRelation(root.right);
-                    root = newRoot;
-                    root.parent = newRoot;
-                    return true;
-                }
-                // 1.2 此时root真正类型为3-节点(设置两个KVNode,并修改flag)
-                newRoot = (ThreeNode) root;
-                newRoot.flag = false;
-                newRoot.kvNode = min;
-                newRoot.rightKVNode = max;
-                return true;
-            }
-
-            // 2. 此时root(表现、真正)类型为3-节点,分裂成3个2-节点
-            newRoot = (ThreeNode) root;
-            KVNode[] nodes = {newRoot.kvNode, newRoot.rightKVNode, kvNode};
-            sort(nodes);
-            min = nodes[0];
-            middle = nodes[1];
-            max = nodes[2];
-            // 2.1 新建左节点
-            TwoNode left = new TwoNode(min, root, newRoot.left, newRoot.center);
-            left.buildLeftRelation(newRoot.left);
-            newRoot.buildLeftRelation(left);
-            // 2.2 新建右节点
-            TwoNode right = new TwoNode(max, root, null, newRoot.right);
-            right.buildRightRelation(newRoot.right);
-            newRoot.buildRightRelation(right);
-            // 2.3 原来的中间节点
-            if (CenterDirection.ROOT_LEFT_RIGHT.equals(centerDirection)) {
-                left.buildRightRelation(newRoot.center);
-            } else if (CenterDirection.NONE.ROOT_RIGHT_LEFT.equals(centerDirection)) {
-                right.buildLeftRelation(newRoot.center);
-            }
-            // 2.4 根节点,并表现为2-节点
-            newRoot.kvNode = middle;
-            newRoot.flag = true;
-            newRoot.rightKVNode = null;
-            newRoot.center = null;
-            return true;
+    private void replace(TwoNode newNode, TwoNode oldNode) {
+        if (!super.replace(newNode, oldNode)) {
+            ((ThreeNode) oldNode.parent).buildCenterRelation(newNode);
         }
-        return false;
     }
 }

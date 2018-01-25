@@ -8,7 +8,7 @@ package com.leo.util.algorithm.bst;
  * @date: 2018/1/22
  * @since 1.0
  */
-class KVNode<K, V> {
+public class KVNode<K, V> {
 
     /**
      * 保存键

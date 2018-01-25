@@ -11,13 +11,12 @@ package com.leo.util.algorithm.bst;
  * @date: 2018/1/22
  * @since 1.0
  */
-class BinaryNode {
+public class BinaryNode {
 
     /**
      * 保存K-V键值对
      */
     protected KVNode kvNode;
-
 
     /**
      * 指向父节点.永不为null
@@ -33,17 +32,6 @@ class BinaryNode {
      * 指向右节点
      */
     protected BinaryNode right;
-
-    public BinaryNode() {
-    }
-
-    protected BinaryNode(KVNode kvNode) {
-        this(kvNode, null, null);
-    }
-
-    protected BinaryNode(BinaryNode left, BinaryNode right) {
-        this(null, left, right);
-    }
 
     protected BinaryNode(KVNode kvNode, BinaryNode left, BinaryNode right) {
         this.kvNode = kvNode;
@@ -77,6 +65,7 @@ class BinaryNode {
         if (leftChild != null) {
             leftChild.parent = this;
         }
+
         this.left = leftChild;
     }
 
@@ -89,27 +78,7 @@ class BinaryNode {
         if (rightChild != null) {
             rightChild.parent = this;
         }
+
         this.right = rightChild;
-    }
-
-    /**
-     * 将oldNode父节点的相应指向变成当前节点，且将当前节点的的parent指向oldNode的父节点
-     *
-     * @param oldNode 要被替换的旧节点
-     * @return 返回true, 替换成功.返回false,替换失败
-     */
-    protected boolean replace(BinaryNode oldNode) {
-        BinaryNode oldNodeParent = oldNode.parent;
-        if (oldNodeParent.left.equals(oldNode)) {
-            oldNodeParent.buildLeftRelation(this);
-            return true;
-        }
-
-
-        if (oldNodeParent.right.equals(oldNode)) {
-            oldNodeParent.buildRightRelation(this);
-            return true;
-        }
-        return false;
     }
 }

@@ -33,5 +33,12 @@ public interface BinarySearchTree<K, V> {
      * @throws IllegalArgumentException 当key = null时，抛出异常
      */
     Optional<V> get(K key) throws IllegalArgumentException;
+
+    /**
+     * 获取树高
+     *
+     * @return
+     */
+    int getHight();
 }
 
