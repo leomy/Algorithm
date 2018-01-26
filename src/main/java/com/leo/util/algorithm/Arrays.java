@@ -292,16 +292,15 @@ public final class Arrays {
      *
      * @param array      待排序的数组
      * @param comparator 比较器.自定义排序规则
-     * @return 排序(以从小到大的顺序)完的数组
      * @throws IllegalArgumentException 当comparator为空时，抛出异常
      */
-    public static final <E> Optional<E[]> shellSort(E[] array, Comparator<E> comparator) throws IllegalArgumentException {
+    public static final <E> void shellSort(Object[] array, Comparator<E> comparator) throws IllegalArgumentException {
         if (comparator == null) {
             throw new IllegalArgumentException();
         }
 
         if (array == null) {
-            return Optional.empty();
+            return;
         }
 
         int h = 1, hMax = array.length / 3;
@@ -311,14 +310,11 @@ public final class Arrays {
 
         while (h >= 1) {
             for (int i = 1, lenght = array.length; i < lenght; i++) {
-                for (int j = i; j >= h && comparator.compare(array[j], array[j - h]) < 0; j -= h) {
+                for (int j = i; j >= h && comparator.compare((E) array[j], (E) array[j - h]) < 0; j -= h) {
                     swap(array, j, j - h);
                 }
             }
             h /= 3;
         }
-
-        return Optional.of(array);
     }
-
 }
