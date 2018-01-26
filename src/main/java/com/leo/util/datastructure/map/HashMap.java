@@ -39,7 +39,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     /**
      * 通过拉链法保存实际的key-value键值对
      */
-    private Node<K, V>[] table;
+    private Object[] table;
 
 
     /**
@@ -64,7 +64,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     static {
         POWER = new int[28];
-        for (int i = 0, length = POWER.length; i < length; i++) {
+        for (int i = 0, length = POWER.length - 1; i < length; i++) {
             POWER[i] = (DEFAULT_INIT_CAPACITY << i);
         }
         POWER[POWER.length - 1] = Integer.MAX_VALUE;
@@ -73,12 +73,12 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     /**
      * 定义类来保存实际的kv键值对
      */
-    private class Node<K, V> extends AbstractEntry<K, V> {
+    private class Node extends AbstractEntry {
 
         /**
          * 指向下一个Node
          */
-        Node<K, V> next;
+        Node next;
 
     }
 
@@ -131,7 +131,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 /**
                  * 表示下一个节点
                  */
-                private Node node = table[0];
+                private Node node = (Node) table[0];
 
                 @Override
                 public boolean hasNext() {
@@ -142,7 +142,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 public E next() {
                     Node node = this.node;
                     while (node == null) {
-                        node = table[position++];
+                        node = (Node) table[position++];
                     }
                     Node oldNode = node;
                     this.node = node.next;
@@ -201,7 +201,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 /**
                  * 表示下一个节点
                  */
-                private Node node = table[0];
+                private Node node = (Node) table[0];
 
                 @Override
                 public boolean hasNext() {
@@ -212,7 +212,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                 public Entry<K, V> next() {
                     Node node = this.node;
                     while (node == null) {
-                        node = table[position++];
+                        node = (Node) table[position++];
                     }
                     Node oldNode = node;
                     this.node = node.next;
@@ -245,7 +245,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         } else if (initCapacity <= MAX_CAPACITY) {
             int index = Arrays.binarySearch(POWER, initCapacity);
             if (index < 0) {
-                index = Math.abs(index) - 1;
+                index = Math.abs(index) - 2;
             }
             capacity = POWER[index];
         } else {
@@ -253,7 +253,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         }
 
         resetThreshold();
-        table = new Node[capacity];
+        table = new Object[capacity];
     }
 
     @Override
@@ -263,28 +263,14 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     @Override
     public Optional<V> get(K key) {
-        //1. 当 key == null时，直接在table[0]中查找
-        Node<K, V> node = null;
-        if (key == null) {
-            node = table[0];
-            while (node != null && node.key != null) {
-                node = node.next;
-            }
-            return (node == null) ? Optional.ofNullable(null) : Optional.of(node.value);
-        }
-
-        //2. 当key != null时,先获取索引的位置，然后一个一个实际比较
-        //Note: JDK8为了性能当链表长度大于8时换成了红黑树
-        node = table[indexOfKey(key)];
+        // 先获取索引的位置，然后一个一个实际比较
+        // Note: JDK8为了性能当链表长度大于8时换成了红黑树
+        Node node = (Node) table[indexOfKey(key)];
         while (node != null && !key.equals(node.key)) {
             node = node.next;
         }
 
-        if (node == null) {
-            return Optional.ofNullable(null);
-        }
-
-        return Optional.of(node.value);
+        return Optional.ofNullable(node == null ? null : (V) node.value);
     }
 
     @Override
@@ -299,7 +285,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsKey(K key) {
-        Node<K, V> node = table[indexOfKey(key)];
+        Node node = (Node) table[indexOfKey(key)];
         while (node != null) {
             if (equalsKeyOrValue(node.key, key)) {
                 return true;
@@ -311,7 +297,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsEntry(K key, V value) {
-        Node<K, V> node = table[indexOfKey(key)];
+        Node node = (Node) table[indexOfKey(key)];
         while (node != null) {
             if (equalsKeyOrValue(node.key, key) && equalsKeyOrValue(node.value, value)) {
                 return true;
@@ -337,7 +323,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         loadFactor = DEFAULT_LOAD_FACTOR;
         size = 0;
         resetThreshold();
-        table = new Node[capacity];
+        table = new Object[capacity];
     }
 
     /**
@@ -379,7 +365,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @return 返回旧值;如果不存在旧值,则为null
      */
     private V put(int index, K key, V value) {
-        Node<K, V> node = table[index];
+        Node node = (Node) table[index];
         while (node != null) {
             if (equalsKeyOrValue(node.key, key)) {
                 break;
@@ -392,7 +378,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
             ensureCapacity();
             addNode(table, index, key, value);
         } else {
-            oldValue = node.value;
+            oldValue = (V) node.value;
             node.value = value;
         }
         return oldValue;
@@ -408,11 +394,11 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * @param value
      */
 
-    private void addNode(Node<K, V>[] table, int index, K key, V value) {
-        Node<K, V> node = new Node();
+    private void addNode(Object[] table, int index, K key, V value) {
+        Node node = new Node();
         node.key = key;
         node.value = value;
-        node.next = table[index];
+        node.next = (Node) table[index];
         table[index] = node;
     }
 
@@ -438,11 +424,11 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * 对Map中的元素重新进行Hash
      */
     private void reHash() {
-        Node[] newTable = new Node[capacity];
-        for (Node<K, V> node : table) {
-            Node<K, V> temp = node;
+        Object[] newTable = new Object[capacity];
+        for (Object node : table) {
+            Node temp = (Node) node;
             while (temp != null) {
-                addNode(newTable, indexOfKey(temp.key), temp.key, temp.value);
+                addNode(newTable, indexOfKey((K) temp.key), (K) temp.key, (V) temp.value);
                 temp = temp.next;
             }
         }
@@ -459,8 +445,8 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      */
     private V remove(K key, V value, boolean ignoreValue) {
         int index = indexOfKey(key);
-        Node<K, V> node = table[index];
-        Node<K, V> prevNode = node;
+        Node node = (Node) table[index];
+        Node prevNode = node;
         boolean isRoot = true;
         while (node != null) {
             if (equalsKeyOrValue(node.key, key)) {
@@ -473,7 +459,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
                     table[index] = node.next;
                 }
                 size--;
-                return node.value;
+                return (V) node.value;
             }
             prevNode = node;
             node = node.next;
