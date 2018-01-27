@@ -241,18 +241,40 @@ public final class Arrays {
      * @return 排序(以从小到大的顺序)完的数组
      */
     public static final Optional<int[]> insertSort(int[] array) {
+        return insertSort(array, 0, array.length);
+    }
+
+    /**
+     * 插入排序.按照升序排序.时间复杂度O(n ^ 2).
+     * Note: 适用范围(数组部分有序): <br/>
+     * 1. 数组中每个元素距它的最终位置不远 <br/>
+     * 2. 一个有序的大数组接上一个小数组 <br/>
+     * 3. 数组中只有几个元素位置不正确 <br/>
+     *
+     * @param array      待排序的数组
+     * @param startIndex 起始索引,包含
+     * @param endIndex   结束索引,不包含
+     * @return 排序(以从小到大的顺序)完的数组
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. startIndex > endIndex <br/>
+     *                                  2. startIndex < 0 <br/>
+     *                                  3. endIndex > array.length <br/>
+     */
+    public static final Optional<int[]> insertSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+        if (startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
+            throw new IllegalArgumentException();
+        }
+
         if (array == null) {
             return Optional.empty();
         }
 
-        for (int i = 1, length = array.length; i < length; i++) {
-            int index = i;
-            while (index > 0 && array[index] < array[index - 1]) {
-                array[index - 1] = array[index];
+
+        for (int i = startIndex + 1, index; i < endIndex; i++) {
+            index = i;
+            while (index > startIndex && array[index] < array[index - 1]) {
+                swap(array, index, index - 1);
                 index--;
-            }
-            if (index != i) {
-                array[index] = array[i];
             }
         }
 
@@ -317,4 +339,31 @@ public final class Arrays {
             h /= 3;
         }
     }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进.
+     *
+     * @param array 待排序的数组
+     */
+    public static final <E extends Comparable> void shellSort(Object[] array) {
+
+        if (array == null) {
+            return;
+        }
+
+        int h = 1, hMax = array.length / 3;
+        while (h < hMax) {
+            h = 3 * h + 1;
+        }
+
+        while (h >= 1) {
+            for (int i = 1, lenght = array.length; i < lenght; i++) {
+                for (int j = i; j >= h && ((E) array[j]).compareTo(array[j - h]) < 0; j -= h) {
+                    swap(array, j, j - h);
+                }
+            }
+            h /= 3;
+        }
+    }
+
 }
