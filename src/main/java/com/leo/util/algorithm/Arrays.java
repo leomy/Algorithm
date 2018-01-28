@@ -180,6 +180,39 @@ public final class Arrays {
         array[index2] = temp;
     }
 
+    /**
+     * 判断 [startIndex,endIndex) 是否是 [0,array.length)的子集
+     *
+     * @param array
+     * @param startIndex 起始索引
+     * @param endIndex   结束索引
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. startIndex > endIndex <br/>
+     *                                  2. startIndex < 0 <br/>
+     *                                  3. endIndex > array.length <br/>
+     */
+    private static void checkIndex(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+        if (startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * 判断 [startIndex,endIndex) 是否是 [0,array.length)的子集
+     *
+     * @param array
+     * @param startIndex 起始索引
+     * @param endIndex   结束索引
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. startIndex > endIndex <br/>
+     *                                  2. startIndex < 0 <br/>
+     *                                  3. endIndex > array.length <br/>
+     */
+    private static void checkIndex(Object[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+        if (startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
+            throw new IllegalArgumentException();
+        }
+    }
 
     /**
      * 冒泡排序(只有int[],该算法实际应用不大).按照升序排序.时间复杂度 O(n ^ 2)
@@ -261,14 +294,10 @@ public final class Arrays {
      *                                  3. endIndex > array.length <br/>
      */
     public static final Optional<int[]> insertSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
-        if (startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
-            throw new IllegalArgumentException();
-        }
-
+        checkIndex(array, startIndex, endIndex);
         if (array == null) {
             return Optional.empty();
         }
-
 
         for (int i = startIndex + 1, index; i < endIndex; i++) {
             index = i;
@@ -282,23 +311,52 @@ public final class Arrays {
     }
 
     /**
-     * 希尔排序.在插入排序的基础上改进.
+     * 获得希尔排序中的最大h
+     *
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    private static int getShellSortMaxH(int startIndex, int endIndex) {
+        int plus = startIndex + 1;
+        int h = plus, hMax = (endIndex - startIndex) / 3;
+        while (h < hMax) {
+            h = 3 * h + plus;
+        }
+        return h;
+    }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进. 在 [0,array.length) 上对数组从小到大排序
      *
      * @param array 待排序的数组
      * @return 排序(以从小到大的顺序)完的数组
      */
     public static final Optional<int[]> shellSort(int[] array) {
+        return shellSort(array, 0, array.length);
+    }
+
+    /**
+     * 希尔排序.在插入排序的基础上改进. 在 [startIndex,endIndex) 上对数组从小到大排序
+     *
+     * @param array      待排序的数组
+     * @param startIndex 起始索引,包含
+     * @param endIndex   结束索引,不包含
+     * @return 排序(以从小到大的顺序)完的数组, 或为null
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. startIndex > endIndex <br/>
+     *                                  2. startIndex < 0 <br/>
+     *                                  3. endIndex > array.length <br/>
+     */
+    public static final Optional<int[]> shellSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
         if (array == null) {
             return Optional.empty();
         }
+        checkIndex(array, startIndex, endIndex);
 
-        int h = 1, hMax = array.length / 3;
-        while (h < hMax) {
-            h = 3 * h + 1;
-        }
-
+        int h = getShellSortMaxH(startIndex, endIndex);
         while (h >= 1) {
-            for (int i = 1, lenght = array.length; i < lenght; i++) {
+            for (int i = h, lenght = endIndex; i < lenght; i++) {
                 for (int j = i; j >= h && array[j] < array[j - h]; j -= h) {
                     swap(array, j, j - h);
                 }
@@ -310,28 +368,40 @@ public final class Arrays {
     }
 
     /**
-     * 希尔排序.在插入排序的基础上改进.
+     * 希尔排序.在 [0,array.length) 上对数组从小到大排序
      *
      * @param array      待排序的数组
      * @param comparator 比较器.自定义排序规则
-     * @throws IllegalArgumentException 当comparator为空时，抛出异常
      */
-    public static final <E> void shellSort(Object[] array, Comparator<E> comparator) throws IllegalArgumentException {
-        if (comparator == null) {
-            throw new IllegalArgumentException();
-        }
+    public static final <E> void shellSort(Object[] array, Comparator<E> comparator) {
+        shellSort(array, 0, array.length, comparator);
+    }
 
+    /**
+     * 希尔排序.在插入排序的基础上改进.在 [startIndex,endIndex) 上对数组从小到大排序
+     *
+     * @param array      待排序的数组
+     * @param startIndex 起始索引,包含
+     * @param endIndex   结束索引,不包含
+     * @param comparator 比较器.自定义排序规则
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. 当comparator为空时，抛出异常
+     *                                  2. startIndex > endIndex <br/>
+     *                                  3. startIndex < 0 <br/>
+     *                                  4. endIndex > array.length <br/>
+     */
+    public static final <E> void shellSort(Object[] array, int startIndex, int endIndex, Comparator<E> comparator) throws IllegalArgumentException {
         if (array == null) {
             return;
         }
-
-        int h = 1, hMax = array.length / 3;
-        while (h < hMax) {
-            h = 3 * h + 1;
+        if (comparator == null) {
+            throw new IllegalArgumentException();
         }
+        checkIndex(array, startIndex, endIndex);
 
+        int h = getShellSortMaxH(startIndex, endIndex);
         while (h >= 1) {
-            for (int i = 1, lenght = array.length; i < lenght; i++) {
+            for (int i = h, lenght = array.length; i < lenght; i++) {
                 for (int j = i; j >= h && comparator.compare((E) array[j], (E) array[j - h]) < 0; j -= h) {
                     swap(array, j, j - h);
                 }
@@ -341,23 +411,26 @@ public final class Arrays {
     }
 
     /**
-     * 希尔排序.在插入排序的基础上改进.
+     * 希尔排序.在插入排序的基础上改进.在 [startIndex,endIndex) 上对数组从小到大排序
      *
-     * @param array 待排序的数组
+     * @param array      待排序的数组
+     * @param startIndex 起始索引,包含
+     * @param endIndex   结束索引,不包含
+     * @param comparator 比较器.自定义排序规则
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. startIndex > endIndex <br/>
+     *                                  2. startIndex < 0 <br/>
+     *                                  3. endIndex > array.length <br/>
      */
-    public static final <E extends Comparable> void shellSort(Object[] array) {
-
+    public static final <E extends Comparable> void shellSort(Object[] array, int startIndex, int endIndex) throws IllegalArgumentException {
         if (array == null) {
             return;
         }
+        checkIndex(array, startIndex, endIndex);
 
-        int h = 1, hMax = array.length / 3;
-        while (h < hMax) {
-            h = 3 * h + 1;
-        }
-
+        int h = getShellSortMaxH(startIndex, endIndex);
         while (h >= 1) {
-            for (int i = 1, lenght = array.length; i < lenght; i++) {
+            for (int i = h, lenght = endIndex; i < lenght; i++) {
                 for (int j = i; j >= h && ((E) array[j]).compareTo(array[j - h]) < 0; j -= h) {
                     swap(array, j, j - h);
                 }
@@ -366,4 +439,78 @@ public final class Arrays {
         }
     }
 
+    /**
+     * 原地归并排序.将数组[0.array.length)内的元素排序
+     *
+     * @param array 待排序的数组
+     */
+    public static final void mergeSort(int[] array) {
+        mergeSort(array, 0, array.length);
+    }
+
+    /**
+     * 原地归并排序.将数组[startIndex,endIndex)内的元素排序
+     *
+     * @param array      待排序的数组
+     * @param startIndex 起始索引,包含
+     * @param endIndex   结束索引,不包含
+     * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
+     *                                  1. startIndex > endIndex <br/>
+     *                                  2. startIndex < 0 <br/>
+     *                                  3. endIndex > array.length <br/>
+     */
+    public static final void mergeSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+        if (array == null) {
+            return;
+        }
+        checkIndex(array, startIndex, endIndex);
+
+        // 1. 当排序长度太小直接用插入排序
+        if (endIndex - 4 < startIndex) {
+            insertSort(array, startIndex, endIndex);
+            return;
+        }
+
+        int[] cache = new int[endIndex - startIndex];
+        mergeSort(array, startIndex, ((endIndex + startIndex) >> 1), endIndex, cache);
+    }
+
+
+    /**
+     * 真正实现merge sort的函数.将src的[startIndex,endIndex)元素排序至dest
+     *
+     * @param src         待排序的数组
+     * @param startIndex  要排序的起始索引,包含
+     * @param middleIndex 要排序中间索引
+     * @param endIndex    要排序的结束索引,不包含
+     * @param cache       需要的辅助数组
+     */
+    private static final void mergeSort(int[] src, int startIndex, int middleIndex, int endIndex, int[] cache) {
+        if (endIndex - 4 < startIndex) {
+            insertSort(src, startIndex, endIndex);
+            return;
+        }
+
+        // 左半边数组排序
+        mergeSort(src, startIndex, (startIndex + middleIndex) >> 1, middleIndex, cache);
+
+        // 右半边数组排序
+        mergeSort(src, middleIndex, (endIndex + middleIndex) >> 1, endIndex, cache);
+
+        int cacheLength = endIndex - startIndex, cacheEndIndex = cacheLength - 1, cacheMiddleIndex = (cacheLength >> 1);
+        System.arraycopy(src, startIndex, cache, 0, cacheLength);
+
+        int leftIndex = 0, rightIndex = cacheMiddleIndex;
+        for (int i = startIndex; i < endIndex; i++) {
+            if (leftIndex >= cacheMiddleIndex) {
+                src[i] = cache[rightIndex++];
+            } else if (rightIndex > cacheEndIndex) {
+                src[i] = cache[leftIndex++];
+            } else if (cache[leftIndex] < cache[rightIndex]) {
+                src[i] = cache[leftIndex++];
+            } else {
+                src[i] = cache[rightIndex++];
+            }
+        }
+    }
 }
