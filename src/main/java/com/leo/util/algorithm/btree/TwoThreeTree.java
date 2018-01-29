@@ -1,4 +1,4 @@
-package com.leo.util.algorithm.bst;
+package com.leo.util.algorithm.btree;
 
 import java.util.Comparator;
 
@@ -10,7 +10,12 @@ import java.util.Comparator;
  * @date: 2018/1/19
  * @since 1.0
  */
-public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements BinarySearchTree<T> {
+public class TwoThreeTree<T> extends AbstractBalancedBinaryTree<T> implements BalancedBinaryTree<T> {
+
+    /**
+     * 保存根节点
+     */
+    private TwoNode root;
 
     /**
      * 标识时哪种节点
@@ -66,6 +71,10 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
      * 2. 两个节点. 左节点的value都小于该节点的value;右节点的value都大于该节点的value
      */
     private class TwoNode extends BinaryNode {
+        /**
+         * 指向父节点.永不为null
+         */
+        TwoNode parent;
 
         NodeFlag nodeFlag;
 
@@ -81,6 +90,36 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
             super(value, left, right);
             this.parent = parent;
             this.parent = parent;
+        }
+
+        /**
+         * 两个节点建立左连接关系
+         *
+         * @param leftChild 要被设置城的左子节节点
+         * @return 返回当前节点, 便于链式调用
+         */
+        TwoNode buildLeftRelation(BinaryNode leftChild) {
+            if (leftChild != null) {
+                ((TwoNode) leftChild).parent = this;
+            }
+
+            this.left = leftChild;
+            return this;
+        }
+
+        /**
+         * 两个节点建立右连接关系
+         *
+         * @param rightChild 要被设置城的父节点
+         * @return 返回当前节点, 便于链式调用
+         */
+        TwoNode buildRightRelation(BinaryNode rightChild) {
+            if (rightChild != null) {
+                ((TwoNode) rightChild).parent = this;
+            }
+
+            this.right = rightChild;
+            return this;
         }
     }
 
@@ -110,7 +149,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
             this(value, maxValue, null, null, null);
         }
 
-        ThreeNode(T value, T maxValue, TwoNode parent, BinaryNode left, BinaryNode right) {
+        ThreeNode(T value, T maxValue, TwoNode parent, TwoNode left, TwoNode right) {
             super(value, parent, left, right);
             this.maxValue = maxValue;
         }
@@ -213,6 +252,11 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
     }
 
     @Override
+    protected BinaryNode getRoot() {
+        return root;
+    }
+
+    @Override
     public void put(T value) throws IllegalArgumentException {
         if (value == null) {
             throw new IllegalArgumentException();
@@ -229,8 +273,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
         Object[] objects = find(root, value);
 
         // 2. 此时节点处于树中,返回
-        boolean contins = (boolean) objects[0];
-        if (contins) {
+        if ((boolean) objects[0]) {
             return;
         }
 
@@ -238,7 +281,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
 
         // 3. 此时树高为1时,root变成3-节点或变成4-节点(分裂)并返回
         if (hight < 2) {
-            if (node.nodeFlag.equals(NodeFlag.TWO)) {
+            if (node.nodeFlag == NodeFlag.TWO) {
                 // 3.1 表示当前节点是个2-节点,直接变成一个三节点
                 Object[] values = {value, node.value};
                 sort(values);
@@ -260,14 +303,14 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
         }
 
         // 4. 此时node为 2-节点.直接变成3-节点,返回
-        if (node.nodeFlag.equals(NodeFlag.TWO)) {
+        if (node.nodeFlag == NodeFlag.TWO) {
             Object[] values = {value, node.value};
             sort(values);
             if (!node.getClass().equals(ThreeNode.class)) {
                 ThreeNode threeNode = new ThreeNode((T) values[0], (T) values[1]);
                 replace(threeNode, node);
-                threeNode.buildLeftRelation(node.left)
-                        .buildRightRelation(node.right);
+                threeNode.buildLeftRelation((TwoNode) node.left)
+                        .buildRightRelation((TwoNode) node.right);
             } else {
                 node.nodeFlag = NodeFlag.THREE;
                 ((ThreeNode) node).value = values[0];
@@ -281,7 +324,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
         Object[] values = {value, threeNode.value, threeNode.maxValue};
         sort(values);
         FourNode fourNode = new FourNode((T) values[0], (T) values[1], (T) values[2],
-                (TwoNode) node.parent,
+                node.parent,
                 threeNode.left, threeNode.center, null, threeNode.right);
         replace(fourNode, node);
         decomposeFourNode(fourNode);
@@ -309,7 +352,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
                 return objects;
             } else if (result < 0) {
                 node = (TwoNode) node.left;
-            } else if (node.nodeFlag.equals(NodeFlag.TWO)) {
+            } else if (node.nodeFlag == NodeFlag.TWO) {
                 node = (TwoNode) node.right;
             } else {
                 ThreeNode threeNode = (ThreeNode) node;
@@ -339,16 +382,16 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
 
             root.buildLeftRelation(new TwoNode((T) fourNode.value))
                     .buildRightRelation(new TwoNode(fourNode.maxValue));
-            root.left.buildLeftRelation(fourNode.left)
+            ((TwoNode) root.left).buildLeftRelation(fourNode.left)
                     .buildRightRelation(fourNode.leftCenter);
-            root.right.buildLeftRelation(fourNode.rightCenter)
+            ((TwoNode) root.right).buildLeftRelation(fourNode.rightCenter)
                     .buildRightRelation(fourNode.right);
 
             hight++;
             return;
         }
 
-        TwoNode parent = (TwoNode) fourNode.parent;
+        TwoNode parent = fourNode.parent;
         Direction direction = Direction.NONE;
         if (fourNode.equals(parent.left)) {
             direction = Direction.LEFT;
@@ -358,7 +401,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
 
         // 2. 此时parent是2-节点,直接变成3-节点,返回
         ThreeNode parentIsThreeNode;
-        if (parent.nodeFlag.equals(NodeFlag.TWO)) {
+        if (parent.nodeFlag == NodeFlag.TWO) {
             if (!parent.getClass().equals(ThreeNode.class)) {
                 parentIsThreeNode = new ThreeNode(null, null);
                 replace(parentIsThreeNode, parent);
@@ -367,7 +410,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
                 parent.nodeFlag = NodeFlag.THREE;
             }
 
-            if (direction.equals(Direction.LEFT)) {
+            if (direction == Direction.LEFT) {
                 // 2.1 从parent左侧插入,广度+先序设置
                 parentIsThreeNode.maxValue = (T) parent.value;
                 parentIsThreeNode.value = fourNode.middleValue;
@@ -376,7 +419,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
                         .buildLeftRelation(new TwoNode((T) fourNode.value))
                         .buildRightRelation(parent.right);
 
-                parentIsThreeNode.left.buildLeftRelation(fourNode.left)
+                ((TwoNode) parentIsThreeNode.left).buildLeftRelation(fourNode.left)
                         .buildRightRelation(fourNode.leftCenter);
                 parentIsThreeNode.center.buildLeftRelation(fourNode.rightCenter)
                         .buildRightRelation(fourNode.right);
@@ -391,7 +434,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
 
                 parentIsThreeNode.center.buildLeftRelation(fourNode.left)
                         .buildRightRelation(fourNode.leftCenter);
-                parentIsThreeNode.right.buildLeftRelation(fourNode.rightCenter)
+                ((TwoNode) parentIsThreeNode.right).buildLeftRelation(fourNode.rightCenter)
                         .buildRightRelation(fourNode.right);
             }
             return;
@@ -399,7 +442,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
 
         // 3 此时parent为3-节点
         parentIsThreeNode = (ThreeNode) parent;
-        if (direction.equals(Direction.NONE)) {
+        if (direction == Direction.NONE) {
             direction = Direction.CENTER;
         }
 
@@ -412,7 +455,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
         TwoNode right = new TwoNode(fourNode.maxValue);
         right.buildLeftRelation(fourNode.rightCenter);
         right.buildRightRelation(fourNode.right);
-        if (direction.equals(Direction.LEFT)) {
+        if (direction == Direction.LEFT) {
             // 3.1.1 child在parent左子树上
             fourNode.value = fourNode.middleValue;
             fourNode.middleValue = (T) parentIsThreeNode.value;
@@ -421,7 +464,7 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
                     .buildRightCenterRelation(parentIsThreeNode.center)
                     .buildLeftRelation(left)
                     .buildRightRelation(parentIsThreeNode.right);
-        } else if (direction.equals(Direction.CENTER)) {
+        } else if (direction == Direction.CENTER) {
             // 3.1.2 child在parent中间子树上
             fourNode.value = fourNode.middleValue;
             fourNode.middleValue = (T) parentIsThreeNode.value;
@@ -450,8 +493,23 @@ public class TwoThreeTree<T> extends AbstractBinarySearchTree<T> implements Bina
      * @param oldNode 要被替换的旧节点
      */
     private void replace(TwoNode newNode, TwoNode oldNode) {
-        if (!super.replace(newNode, oldNode)) {
-            ((ThreeNode) oldNode.parent).buildCenterRelation(newNode);
+        if (newNode == null || oldNode == null) {
+            return;
+        }
+
+        if (root.equals(oldNode)) {
+            root = newNode;
+            root.parent = newNode;
+            return;
+        }
+
+        TwoNode oldNodeParent = oldNode.parent;
+        if (oldNode.equals(oldNodeParent.left)) {
+            oldNodeParent.buildLeftRelation(newNode);
+        } else if (oldNode.equals(oldNodeParent.right)) {
+            oldNodeParent.buildRightRelation(newNode);
+        } else if (oldNode.equals(((ThreeNode) oldNodeParent).center)) {
+            ((ThreeNode) oldNodeParent).buildCenterRelation(newNode);
         }
     }
 }

@@ -1,11 +1,11 @@
-package com.leo.util.algorithm.bst;
+package com.leo.util.algorithm.btree;
 
 import com.leo.util.algorithm.Arrays;
 
 import java.util.Comparator;
 
 /**
- * 所有实现了二叉查找树接口的基类
+ * 所有平衡二叉树接口的基类
  * Note: 不保存null
  *
  * @author leo
@@ -13,13 +13,7 @@ import java.util.Comparator;
  * @date: 2018/1/19
  * @since 1.0
  */
-public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T> {
-
-    /**
-     * 保存根节点
-     */
-    protected BinaryNode root;
-
+public abstract class AbstractBalancedBinaryTree<T> implements BalancedBinaryTree<T> {
     /**
      * 保存树高
      */
@@ -30,7 +24,7 @@ public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T>
      */
     protected Comparator<T> comparator;
 
-    public AbstractBinarySearchTree(Comparator<T> comparator) {
+    public AbstractBalancedBinaryTree(Comparator<T> comparator) {
         this.comparator = (comparator == null ? generateCompator() : comparator);
     }
 
@@ -40,7 +34,7 @@ public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T>
             throw new IllegalArgumentException();
         }
 
-        Object[] objects = find(root, value);
+        Object[] objects = find(getRoot(), value);
         return (boolean) objects[0];
     }
 
@@ -66,10 +60,10 @@ public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T>
      * @param value 要查找的值
      * @return 1. index = 0 : 表示是否找到value;true表示找到,false表示未找到,影响index = 2,index = 3  <br/>
      * 2. index = 1 : 当index = 0的值为false时,表示找的最近的节点;当index = 0为true时,其值无效 <br/>
-     * 3. index = 2 : 当index = 0的值为false时,表示参数value与最近节点的value与的大小关系.大于0，表示参数value > 最近节点的value,反之，参数value < 最近节点的value;当index = 0为true时,其值无效 <br/>
+     * 3. index = 2 : 当index = 0的值为fale时,表示参数value与最近节点的value与的大小关系.大于0，表示参数value > 最近节点的value,反之，参数value < 最近节点的value;当index = 0为true时,其值无效 <br/>
      */
     protected Object[] find(BinaryNode start, T value) {
-        Object[] objects = new Object[3];
+        Object[] objects = new Object[2];
         BinaryNode parent = start;
         int result = 0;
 
@@ -85,7 +79,6 @@ public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T>
 
         objects[0] = false;
         objects[1] = parent;
-        objects[2] = result;
         return objects;
     }
 
@@ -100,34 +93,9 @@ public abstract class AbstractBinarySearchTree<T> implements BinarySearchTree<T>
     }
 
     /**
-     * 将oldNode父节点的相应指向(left,right)变成newNode，且将newNode节点的的parent指向oldNode的父节点
+     * 获取root节点
      *
-     * @param newNode 要替换的新节点
-     * @param oldNode 要被替换的旧节点
-     * @return 返回true, 替换成功.返回false,替换失败
+     * @return
      */
-    protected boolean replace(BinaryNode newNode, BinaryNode oldNode) {
-        if (newNode == null || oldNode == null) {
-            return false;
-        }
-
-        if (root.equals(oldNode)) {
-            root = newNode;
-            root.parent = newNode;
-            return true;
-        }
-
-        BinaryNode oldNodeParent = oldNode.parent;
-        if (oldNode.equals(oldNodeParent.left)) {
-            oldNodeParent.buildLeftRelation(newNode);
-            return true;
-        }
-
-        if (oldNode.equals(oldNodeParent.right)) {
-            oldNodeParent.buildRightRelation(newNode);
-            return true;
-        }
-
-        return false;
-    }
+    protected abstract BinaryNode getRoot();
 }
