@@ -11,7 +11,7 @@
 ### Search
 - [Binary Search](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L29)
 - Balanced Search Tree(Binary Search Tree)
-    - [2-3 Tree](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/bst/TwoThreeTree.java)
+    - [2-3 Tree](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/btree/TwoThreeTree.java)
     - Red Black Tree
 - Hash Table
     - [HashMap](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/datastructure/map/HashMap.java)
