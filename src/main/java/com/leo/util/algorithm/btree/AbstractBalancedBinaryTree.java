@@ -20,7 +20,7 @@ public abstract class AbstractBalancedBinaryTree<T> implements BalancedBinaryTre
     protected int hight;
 
     /**
-     * value的比较器,用来比较value的大小
+     * 比较器,用来比较大小
      */
     protected Comparator<T> comparator;
 

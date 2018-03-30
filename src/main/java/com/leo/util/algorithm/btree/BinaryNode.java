@@ -39,7 +39,7 @@ public class BinaryNode<T> {
     }
 
     /**
-     * 获取一对K-V键值对
+     * 获取value
      */
     T getValue() {
         return value;

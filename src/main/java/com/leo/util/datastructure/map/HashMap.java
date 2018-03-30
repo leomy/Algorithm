@@ -21,7 +21,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
     /**
      * 当前的容量,保证为2^n (n >= 4).
-     * Note: 为了每次hash()时，取模运算(%)能更快、分配得更均匀
+     * Note: 为了每次index()时，取模运算(%)能更快、分配得更均匀
      */
     private int capacity;
 
@@ -41,7 +41,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      */
     private Object[] table;
 
-
     /**
      * 默认的初始化容量
      */
@@ -58,7 +57,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
-     * 保存2的指数,min = 1, max = (1<<32)
+     * 保存2的指数,min = 16, max = (1<<32)
      */
     private static int POWER[];
 
@@ -227,11 +226,20 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
         this(DEFAULT_INIT_CAPACITY);
     }
 
-    public HashMap(int initCapacity) {
+    /**
+     * @param initCapacity 初始化容量
+     * @throws IllegalArgumentException 当初始化容量超过最大容量时，抛出异常
+     */
+    public HashMap(int initCapacity) throws IllegalArgumentException {
         this(initCapacity, DEFAULT_LOAD_FACTOR);
     }
 
-    public HashMap(int initCapacity, float initLoadFactor) {
+    /**
+     * @param initCapacity   初始化容量
+     * @param initLoadFactor 初始化负载因子 [0, 1)
+     * @throws IllegalArgumentException 当初始化容量超过最大容量时，抛出异常
+     */
+    public HashMap(int initCapacity, float initLoadFactor) throws IllegalArgumentException {
         //计算负载因子
         if (initLoadFactor <= 0 || initLoadFactor > 1) {
             initLoadFactor = DEFAULT_LOAD_FACTOR;
@@ -341,7 +349,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * 重新设置threshold
      */
     private void resetThreshold() {
-        threshold = (int) Math.ceil((double) (capacity * loadFactor));
+        threshold = (int) (capacity * loadFactor);
     }
 
     /**
@@ -350,7 +358,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      * 当key == null时,直接返回0
      *
      * @param key
-     * @return 返回再table的索引
+     * @return 返回在table的索引
      */
     private int indexOfKey(K key) {
         return key == null ? 0 : (key.hashCode() & 0x7FFF_FFFF) & (capacity - 1);
@@ -372,15 +380,19 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
             }
             node = node.next;
         }
+
         V oldValue = null;
-        if (node == null) {
-            size++;
-            ensureCapacity();
-            addNode(table, index, key, value);
-        } else {
+
+        if (node != null) {
             oldValue = (V) node.value;
             node.value = value;
+        } else {
+            if (++size > threshold) {
+                ensureCapacity();
+            }
+            addNode(table, index, key, value);
         }
+
         return oldValue;
     }
 
@@ -408,13 +420,11 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
      *
      * @throws RuntimeException 当容量超过最大容量时，抛出异常
      */
-    private void ensureCapacity() {
+    private void ensureCapacity() throws RuntimeException {
         if (capacity < MAX_CAPACITY) {
-            if (size == threshold) {
-                capacity <<= 1;
-                resetThreshold();
-                reHash();
-            }
+            capacity <<= 1;
+            resetThreshold();
+            reHash();
         } else {
             throw new RuntimeException("up the max capacity");
         }

@@ -22,7 +22,10 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
      */
     private Object[] elements;
 
-    private static final Object[] EMPTY_ELMENTS = new Object[]{};
+    /**
+     * 构造方法所使用的数组，当第一次put时才分配真正的数组
+     */
+    private static final Object[] EMPTY_ELEMENTS = new Object[]{};
 
     /**
      * 容量
@@ -48,7 +51,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
             throw new IllegalArgumentException("Illegal capacity: " + initCapacity);
         }
         capacity = initCapacity;
-        elements = EMPTY_ELMENTS;
+        elements = EMPTY_ELEMENTS;
     }
 
 
@@ -201,7 +204,7 @@ public class ArrayList<E> extends AbstractList<E> implements List<E> {
             int halfCapacity = capacity >> 1;
             capacity = (MAX_CAPACITY - capacity) <= halfCapacity ? MAX_CAPACITY : capacity + halfCapacity;
             elements = Arrays.copyOf(elements, capacity);
-        } else if (elements.equals(EMPTY_ELMENTS)) {
+        } else if (elements.equals(EMPTY_ELEMENTS)) {
             elements = new Object[capacity];
         }
     }
