@@ -18,19 +18,24 @@ public class ArraysTest {
 
     @Test
     public void testQuickSortIsTrue() {
-        int length = 10_000;
-        int numberMaxRange = 100_000;
-        Random random = new Random(numberMaxRange);
 
-        List<Integer> numbers = Stream.generate(() -> random.nextInt()).limit(length).collect(Collectors.toList());
-        Collections.shuffle(numbers);
-        int[] sortByJava = numbers.stream().mapToInt(number -> number.intValue()).toArray();
-        Collections.shuffle(numbers);
-        int[] sortByMine = numbers.stream().mapToInt(number -> number.intValue()).toArray();
+        int loopNumber = 1_000;
+        int arrayLength = 10_000;
+        int maxRange = 100_000;
+        Random random = new Random();
 
-        Arrays.quickSort(sortByMine);
-        java.util.Arrays.sort(sortByJava);
+        for (int i = 0; i < loopNumber; i++) {
+            List<Integer> numbers = Stream.generate(() -> random.nextInt(maxRange)).limit(arrayLength).collect(Collectors.toList());
+            Collections.shuffle(numbers);
+            int[] sortByJava = numbers.stream().mapToInt(Integer::intValue).toArray();
+            Collections.shuffle(numbers);
+            int[] sortByMine = numbers.stream().mapToInt(Integer::intValue).toArray();
 
-        Assert.assertArrayEquals(sortByJava, sortByMine);
+            Arrays.quickSort(sortByMine);
+            java.util.Arrays.sort(sortByJava);
+
+            Assert.assertArrayEquals(sortByJava, sortByMine);
+        }
+
     }
 }

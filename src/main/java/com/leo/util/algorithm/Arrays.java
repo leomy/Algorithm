@@ -516,6 +516,10 @@ public final class Arrays {
         }
     }
 
+    /**
+     * 快速排序
+     * @param array 待排序的数组
+     */
     public static void quickSort(int[] array) {
         int start = 0, end = array.length;
 
@@ -530,9 +534,11 @@ public final class Arrays {
         int startCopy = start, endCopy = (--end);
         int target = array[start++];
 
-        while (true) {
+        while (start < end) {
             while (target >= array[start]) {
-                start++;
+                if (++start >= array.length) {
+                    break;
+                }
             }
             while (target < array[end]) {
                 end--;
