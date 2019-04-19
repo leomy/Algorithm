@@ -3,11 +3,12 @@
    通过自己重复造一些轮子,更好的理解算法和数据结构
 ## Algorithmic
 ### Sort
-- [Bubble Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L223)
-- [Select Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L246)
-- [Insert Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L276)
-- [Shell Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L335)
-- [Merge Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L447)
+- [Bubble Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L226)
+- [Select Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L249)
+- [Insert Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L279)
+- [Shell Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L338)
+- [Merge Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L449)
+- [Quick Sort](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L523)
 ### Search
 - [Binary Search](https://github.com/leomy/algorithm/blob/master/src/main/java/com/leo/util/algorithm/Arrays.java#L29)
 - Balanced Search Tree(Binary Search Tree)
