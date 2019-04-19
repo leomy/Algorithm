@@ -26,7 +26,7 @@ public final class Arrays {
      * 当 return < 0 时,-return + 1 表示key插入array时，应该在的位置
      * @throws NullPointerException 当array为空时抛出异常
      */
-    public static final int binarySearch(int[] array, int key) throws NullPointerException {
+    public static int binarySearch(int[] array, int key) throws NullPointerException {
         return binarySearch(array, 0, array.length, key);
     }
 
@@ -45,7 +45,7 @@ public final class Arrays {
      *                                  3. startIndex < 0 <br/>
      *                                  4. endIndex > array.length <br/>
      */
-    public static final int binarySearch(int[] array, int startIndex, int endIndex, int key) throws NullPointerException, IllegalArgumentException {
+    public static int binarySearch(int[] array, int startIndex, int endIndex, int key) throws NullPointerException, IllegalArgumentException {
         if (array == null || startIndex > endIndex || startIndex < 0 || endIndex > array.length) {
             throw new IllegalArgumentException();
         }
@@ -93,7 +93,7 @@ public final class Arrays {
      * 当 return < 0 时,-return + 1 表示key插入array时，应该在的位置
      * @throws IllegalArgumentException 当array或key为null时抛出异常
      */
-    public static final <E> int binarySearch(E[] array, E key, Comparator<E> comparator) throws IllegalArgumentException {
+    public static <E> int binarySearch(E[] array, E key, Comparator<E> comparator) throws IllegalArgumentException {
         return binarySearch(array, 0, array.length, key, comparator);
     }
 
@@ -162,6 +162,9 @@ public final class Arrays {
      * @param index2
      */
     private static final void swap(int[] array, int index1, int index2) {
+        if (index1 == index2) {
+            return;
+        }
         array[index1] ^= array[index2];
         array[index2] ^= array[index1];
         array[index1] ^= array[index2];
@@ -174,7 +177,7 @@ public final class Arrays {
      * @param index1
      * @param index2
      */
-    private static final <E> void swap(E[] array, int index1, int index2) {
+    private static <E> void swap(E[] array, int index1, int index2) {
         E temp = array[index1];
         array[index1] = array[index2];
         array[index2] = temp;
@@ -220,7 +223,7 @@ public final class Arrays {
      * @param array 待排序的数组
      * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final Optional<int[]> bubbleSort(int[] array) {
+    public static Optional<int[]> bubbleSort(int[] array) {
         if (array != null) {
             return Optional.empty();
         }
@@ -243,7 +246,7 @@ public final class Arrays {
      * @param array 待排序的数组
      * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final Optional<int[]> selectSort(int[] array) {
+    public static Optional<int[]> selectSort(int[] array) {
         if (array == null) {
             return Optional.empty();
         }
@@ -273,7 +276,7 @@ public final class Arrays {
      * @param array 待排序的数组
      * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final Optional<int[]> insertSort(int[] array) {
+    public static Optional<int[]> insertSort(int[] array) {
         return insertSort(array, 0, array.length);
     }
 
@@ -332,7 +335,7 @@ public final class Arrays {
      * @param array 待排序的数组
      * @return 排序(以从小到大的顺序)完的数组
      */
-    public static final Optional<int[]> shellSort(int[] array) {
+    public static Optional<int[]> shellSort(int[] array) {
         return shellSort(array, 0, array.length);
     }
 
@@ -348,7 +351,7 @@ public final class Arrays {
      *                                  2. startIndex < 0 <br/>
      *                                  3. endIndex > array.length <br/>
      */
-    public static final Optional<int[]> shellSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+    public static Optional<int[]> shellSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
         if (array == null) {
             return Optional.empty();
         }
@@ -373,7 +376,7 @@ public final class Arrays {
      * @param array      待排序的数组
      * @param comparator 比较器.自定义排序规则
      */
-    public static final <E> void shellSort(Object[] array, Comparator<E> comparator) {
+    public static <E> void shellSort(Object[] array, Comparator<E> comparator) {
         shellSort(array, 0, array.length, comparator);
     }
 
@@ -416,13 +419,12 @@ public final class Arrays {
      * @param array      待排序的数组
      * @param startIndex 起始索引,包含
      * @param endIndex   结束索引,不包含
-     * @param comparator 比较器.自定义排序规则
      * @throws IllegalArgumentException 当出现下列情况时,抛出异常: <br/>
      *                                  1. startIndex > endIndex <br/>
      *                                  2. startIndex < 0 <br/>
      *                                  3. endIndex > array.length <br/>
      */
-    public static final <E extends Comparable> void shellSort(Object[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+    public static <E extends Comparable> void shellSort(Object[] array, int startIndex, int endIndex) throws IllegalArgumentException {
         if (array == null) {
             return;
         }
@@ -444,7 +446,7 @@ public final class Arrays {
      *
      * @param array 待排序的数组
      */
-    public static final void mergeSort(int[] array) {
+    public static void mergeSort(int[] array) {
         mergeSort(array, 0, array.length);
     }
 
@@ -459,7 +461,7 @@ public final class Arrays {
      *                                  2. startIndex < 0 <br/>
      *                                  3. endIndex > array.length <br/>
      */
-    public static final void mergeSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
+    public static void mergeSort(int[] array, int startIndex, int endIndex) throws IllegalArgumentException {
         if (array == null) {
             return;
         }
@@ -485,7 +487,7 @@ public final class Arrays {
      * @param endIndex    要排序的结束索引,不包含
      * @param cache       需要的辅助数组
      */
-    private static final void mergeSort(int[] src, int startIndex, int middleIndex, int endIndex, int[] cache) {
+    private static void mergeSort(int[] src, int startIndex, int middleIndex, int endIndex, int[] cache) {
         if (endIndex - 4 < startIndex) {
             insertSort(src, startIndex, endIndex);
             return;
@@ -511,6 +513,44 @@ public final class Arrays {
             } else {
                 src[i] = cache[rightIndex++];
             }
+        }
+    }
+
+    public static void quickSort(int[] array) {
+        int start = 0, end = array.length;
+
+        quickSort(array, start, end);
+    }
+
+    public static void quickSort(int[] array, int start, int end) {
+        if (end - start < 4) {
+            insertSort(array, start, end);
+            return;
+        }
+        int startCopy = start, endCopy = (--end);
+        int target = array[start++];
+
+        while (true) {
+            while (target >= array[start]) {
+                start++;
+            }
+            while (target < array[end]) {
+                end--;
+            }
+            if (start < end) {
+                swap(array, start, end);
+                continue;
+            }
+            break;
+        }
+        int location = (end > start) ? start : end;
+        for (int i = startCopy; i < location; i++) {
+            array[i] = array[i + 1];
+        }
+        array[location] = target;
+        quickSort(array, startCopy, location);
+        if (location < array.length) {
+            quickSort(array, location + 1, endCopy + 1);
         }
     }
 }
