@@ -553,13 +553,14 @@ public final class Arrays {
             return;
         }
         int left = start, right = end;
-        int target = array[left];
+        int target = array[start];
         while (left < right) {
-            while (target <= array[right] && left < right) {
+            while (left < right && target <= array[right]) {
                 --right;
             }
             array[left] = array[right];
-            while (target >= array[left] && left < right) {
+
+            while (left < right && target >= array[left]) {
                 ++left;
             }
             array[right] = array[left];
