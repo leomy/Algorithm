@@ -36,6 +36,5 @@ public class ArraysTest {
 
             Assert.assertArrayEquals(sortByJava, sortByMine);
         }
-
     }
 }

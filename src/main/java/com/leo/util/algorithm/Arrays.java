@@ -518,45 +518,59 @@ public final class Arrays {
 
     /**
      * 快速排序
+     *
      * @param array 待排序的数组
+     * @throws IllegalArgumentException 数组为null
      */
-    public static void quickSort(int[] array) {
-        int start = 0, end = array.length;
-
-        quickSort(array, start, end);
+    public static void quickSort(int[] array) throws IllegalArgumentException {
+        quickSort(array, 0, array.length - 1);
     }
 
-    public static void quickSort(int[] array, int start, int end) {
-        if (end - start < 4) {
-            insertSort(array, start, end);
+    /**
+     * 快速排序
+     *
+     * @param array 待排序的数组
+     * @param start 起始索引,包含在内
+     * @param end   结束索引,不包含在内
+     * @throws IllegalArgumentException
+     */
+    private static void quickSort(int[] array, int start, int end) throws IllegalArgumentException {
+        if (array == null || start > end || start < 0 || end > array.length) {
+            throw new IllegalArgumentException();
+        }
+        quickSortImplementsWithRecursive(array, start, end);
+    }
+
+    /**
+     * 用递归实现的快速排序
+     *
+     * @param array 待排序的数组
+     * @param start 起始位置,包含在内
+     * @param end   结束位置,包含在内
+     */
+    private static void quickSortImplementsWithRecursive(int[] array, int start, int end) {
+        if (start >= end) {
             return;
         }
-        int startCopy = start, endCopy = (--end);
-        int target = array[start++];
+        int left = start, right = end;
+        int target = array[left];
+        while (left < right) {
+            while (target <= array[right] && left < right) {
+                --right;
+            }
+            array[left] = array[right];
+            while (target >= array[left] && left < right) {
+                ++left;
+            }
+            array[right] = array[left];
+        }
+        array[left] = target;
 
-        while (start < end) {
-            while (target >= array[start]) {
-                if (++start >= array.length) {
-                    break;
-                }
-            }
-            while (target < array[end]) {
-                end--;
-            }
-            if (start < end) {
-                swap(array, start, end);
-                continue;
-            }
-            break;
-        }
-        int location = (end > start) ? start : end;
-        for (int i = startCopy; i < location; i++) {
-            array[i] = array[i + 1];
-        }
-        array[location] = target;
-        quickSort(array, startCopy, location);
-        if (location < array.length) {
-            quickSort(array, location + 1, endCopy + 1);
-        }
+        quickSortImplementsWithRecursive(array, start, left - 1);
+        quickSortImplementsWithRecursive(array, left + 1, end);
     }
+
+
 }
+
+
