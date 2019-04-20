@@ -553,7 +553,9 @@ public final class Arrays {
             return;
         }
         int left = start, right = end;
+        exchangeMiddle(array, start, end);
         int target = array[start];
+
         while (left < right) {
             while (left < right && target <= array[right]) {
                 --right;
@@ -569,6 +571,36 @@ public final class Arrays {
 
         quickSortImplementsWithRecursive(array, start, left - 1);
         quickSortImplementsWithRecursive(array, left + 1, end);
+    }
+
+    /**
+     * 快速排序针对基本有序的数组，时间复杂度接近O(n^2).运用三者取中找到合适的基准记录
+     *
+     * @param array
+     * @param start
+     * @param end
+     */
+    private static void exchangeMiddle(int[] array, int start, int end) {
+        int middle = (start + end) >> 1;
+
+        if (array[start] > array[middle]) {
+            if (array[middle] > array[end]) {
+                swap(array, start, middle);
+                return;
+            }
+            if (array[start] > array[end]) {
+                swap(array, start, end);
+                return;
+            }
+        }
+
+        if (array[middle] < array[end]) {
+            swap(array, start, middle);
+            return;
+        }
+        if (array[start] > array[end]) {
+            swap(array, start, end);
+        }
     }
 
 
